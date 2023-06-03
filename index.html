@@ -2,6 +2,7 @@
   <head>
     <script>
       let isTiming = false;
+      let elapsed;
       function setMyKeyDownListener() {
         window.addEventListener("keydown", function(event) {MyFunction(event.key)})
       }
@@ -25,7 +26,7 @@
     <p id="timer" style="text-align:center; font-size:120px">Test</p>
     <script>
       if (isTiming) {
-        let elapsed = new Date() - start;
+        elapsed = new Date() - start;
         document.getElementById("timer").innerHTML = elapsed;
       } else if (!isTiming) {
         document.getElementById("timer").innerHTML = elapsed;
