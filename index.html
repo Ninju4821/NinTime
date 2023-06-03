@@ -1,15 +1,32 @@
 <html>
-  <body>
+  <head>
+    <script>
+      let isTiming = false;
+      function setMyKeyDownListener() {
+        window.addEventListener("keydown", function(event) {MyFunction(event.key)})
+      }
+      function MyFunction (the_Key) {
+        if (the_Key == " ") {
+          if (isTiming) {
+            isTiming = false;
+          } else if (!isTiming) {
+            isTiming = true;
+            let start = new Date();
+          }
+        }
+      }
+    </script>
+  </head>
+  <body onload="setMyKeyDownListener()">
+    <div>
+        <input id="MyInputId">
+    </div>
     <p id="timer" style="text-align:center; font-size:120px">Test</p>
     <script>
-      window.addEventListener('keydown', function(event) {
-        if(event.keyCode == 32) {
-          let start = new Date();
-          do {
-            document.getElementById("test").innerHTML = new Date() - start;
-          } while (new Date() - start < 40)
-        }
-      });
+      if (isTiming) {
+        let elapsed = new Date() - start;
+        document.getElementById("timer").innerHTML = elapsed;
+      }
     </script>
   </body>
 </html>
