@@ -1,10 +1,18 @@
 <html>
   <body>
     <script>
+      function sleep(milliseconds) {
+        const date = Date.now();
+        let currentDate = null;
+       do {
+         currentDate = Date.now();
+        } while (currentDate - date < milliseconds);
+      }
       let Start = new Date();
     </script>
     <p id="test">Test</p>
     <script>
+      sleep(5000)
       let elapsed = new Date() - Start;
       document.getElementById("test").innerHTML = elapsed;
     </script>
