@@ -3,9 +3,10 @@
     <script>
       let Start = new Date();
     </script>
-    <p>Test</p>
+    <p id="test">Test</p>
     <script>
       let elapsed = new Date() - Start;
+      document.getElementById("test").innerHTML = elapsed;
     </script>
   </body>
 </html>
