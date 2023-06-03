@@ -1,11 +1,12 @@
 let isTiming = false;
 let elapsed = 1;
 
-function setMyKeyDownListener() {
-  window.addEventListener("keydown", function(event) {MyFunction(event.key)})
+function Initialization() {
+  window.addEventListener("keydown", function(event) {Input(event.key)});
+  window.requestAnimationFrame(TimerLoop);
 }
 
-function MyFunction (the_Key) {
+function Input (the_Key) {
   if (the_Key == " ") {
     console.log("Space Pressed");
     if (isTiming) {
@@ -17,7 +18,10 @@ function MyFunction (the_Key) {
   }
 }
 
-while (isTiming) {
-  elapsed = new Date() - start;
-  document.getElementById("timer").innerHTML = elapsed;
+function TimerLoop () {
+  if (isTiming) {
+    elapsed = new Date() - start;
+    document.getElementById("timer").innerHTML = elapsed;
+  }
+  window.requestAnimationFrame(TimerLoop);
 }
