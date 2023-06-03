@@ -25,10 +25,8 @@
     </div>
     <p id="timer" style="text-align:center; font-size:120px">Test</p>
     <script>
-      if (isTiming) {
+      while (isTiming) {
         elapsed = new Date() - start;
-        document.getElementById("timer").innerHTML = elapsed;
-      } else if (!isTiming) {
         document.getElementById("timer").innerHTML = elapsed;
       }
     </script>
