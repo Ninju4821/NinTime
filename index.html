@@ -1,34 +1,8 @@
 <html>
   <head>
-    <script>
-      let isTiming = false;
-      let elapsed = 1;
-      function setMyKeyDownListener() {
-        window.addEventListener("keydown", function(event) {MyFunction(event.key)})
-      }
-      function MyFunction (the_Key) {
-        if (the_Key == " ") {
-          console.log("Space Pressed");
-          if (isTiming) {
-            isTiming = false;
-          } else if (!isTiming) {
-            isTiming = true;
-            let start = new Date();
-          }
-        }
-      }
-    </script>
+    <script href="timer.js"></script>
   </head>
   <body onload="setMyKeyDownListener()">
-    <div>
-        <input id="MyInputId">
-    </div>
     <p id="timer" style="text-align:center; font-size:120px">Test</p>
-    <script>
-      while (isTiming) {
-        elapsed = new Date() - start;
-        document.getElementById("timer").innerHTML = elapsed;
-      }
-    </script>
   </body>
 </html>
