@@ -1,20 +1,15 @@
 <html>
   <body>
+    <p id="timer" style="text-align:center; font-size:120px">Test</p>
     <script>
-      function sleep(milliseconds) {
-        const date = Date.now();
-        let currentDate = null;
-       do {
-         currentDate = Date.now();
-        } while (currentDate - date < milliseconds);
-      }
-      let Start = new Date();
-    </script>
-    <p id="test">Test</p>
-    <script>
-      sleep(5000)
-      let elapsed = new Date() - Start;
-      document.getElementById("test").innerHTML = elapsed;
+      document.addEventListener('keydown', function(event) {
+        if(event.keyCode == 32) {
+          let start = new Date();
+          do {
+            document.getElementById("test").innerHTML = new Date() - start;
+          } while (event.keyCode != 32)
+        }
+      });
     </script>
   </body>
 </html>
