@@ -27,10 +27,16 @@ function TimerLoop () {
     let seconds = Math.floor(elapsed / 1000);
     //Find the milliseconds alone
     let milliseconds = elapsed - seconds * 1000;
+    //Find the minutes of those seconds
+    let minutes = Math.floor(seconds / 60);
+    //Correct the seconds to not include the minutes
+    seconds = seconds - minutes * 60;
+    let hours = 0;
     //Convert times to padded strings
+    let dispMinutes = if hours == 0 ? minutes.toString : minutes.toString().padStart(2, '0');
     let dispSeconds = seconds.toString().padStart(2, '0');
     let dispMilliseconds = milliseconds.toString().padStart(3, '0');
-    document.getElementById("timer").innerHTML = dispSeconds + "." + dispMilliseconds;
+    document.getElementById("timer").innerHTML = dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
   }
   window.requestAnimationFrame(TimerLoop);
 }
