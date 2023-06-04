@@ -22,7 +22,8 @@ function Input (the_Key) {
 function TimerLoop () {
   if (isTiming) {
     elapsed = new Date() - start;
-    document.getElementById("timer").innerHTML = elapsed;
+    let seconds = Math.floor(elapsed / 1000);
+    document.getElementById("timer").innerHTML = seconds + ":" + elapsed - seconds;
   }
   window.requestAnimationFrame(TimerLoop);
 }
