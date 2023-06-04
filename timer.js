@@ -24,7 +24,7 @@ function TimerLoop () {
     elapsed = new Date() - start;
     let seconds = Math.floor(elapsed / 1000);
     let miliseconds = elapsed - seconds * 1000;
-    document.getElementById("timer").innerHTML = String(seconds) + ":" + String(milisecond);
+    document.getElementById("timer").innerHTML = String(seconds) + ":" + String(miliseconds);
   }
   window.requestAnimationFrame(TimerLoop);
 }
