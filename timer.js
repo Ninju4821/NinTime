@@ -34,7 +34,7 @@ function TimerLoop () {
     //Find the hours of those minutes
     let hours = 0;
     //Convert times to padded strings
-    let dispMinutes = hours == 0 ? minutes.toString : minutes.toString().padStart(2, '0');
+    let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
     let dispSeconds = seconds.toString().padStart(2, '0');
     let dispMilliseconds = milliseconds.toString().padStart(3, '0');
     document.getElementById("timer").innerHTML = dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
