@@ -21,10 +21,16 @@ function Input (the_Key) {
 
 function TimerLoop () {
   if (isTiming) {
+    //Get the time elapsed in total milliseconds
     elapsed = new Date() - start;
+    //Find the seconds of those milliseconds
     let seconds = Math.floor(elapsed / 1000);
-    let miliseconds = elapsed - seconds * 1000;
-    document.getElementById("timer").innerHTML = String(seconds) + ":" + String(miliseconds);
+    //Find the milliseconds alone
+    let milliseconds = elapsed - seconds * 1000;
+    //Convert times to padded strings
+    let dispSeconds = seconds.toString().padStart(2, '0');
+    let dispMilliseconds = milliseconds.toString().padStart(3, '0');
+    document.getElementById("timer").innerHTML = dispSeconds + "." + dispMilliseconds;
   }
   window.requestAnimationFrame(TimerLoop);
 }
