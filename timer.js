@@ -31,6 +31,7 @@ function TimerLoop () {
     let minutes = Math.floor(seconds / 60);
     //Correct the seconds to not include the minutes
     seconds = seconds - minutes * 60;
+    //Track hours
     let hours = 0;
     //Convert times to padded strings
     let dispMinutes = if hours == 0 ? minutes.toString : minutes.toString().padStart(2, '0');
