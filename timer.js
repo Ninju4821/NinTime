@@ -1,4 +1,5 @@
 let isTiming = false;
+let start = new Date();
 let elapsed = 1;
 
 function Initialization() {
@@ -13,7 +14,7 @@ function Input (the_Key) {
       isTiming = false;
     } else if (!isTiming) {
       isTiming = true;
-      let start = new Date();
+      start = new Date();
     }
   }
 }
