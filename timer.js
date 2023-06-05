@@ -53,16 +53,33 @@ function InputUp (the_Key) {
 
 function GenerateScramble (length) {
   let scramble = "";
-  //Every possible turn
-  const turns = ["U ", "U' ", "R ", "R' ", "B ", "B' ", "L ", "L' ", "F ", "F' ", "D ", "D' ", "U2 ", "R2 ", "B2 ", "L2 ", "F2 ", "D2 ", "N "];
-  let lastTurn = 18; //Allows generation to work on the first cycle
-  let turnNum = 0;
+  let lastAxis = 3;
+  let axis = 0;
+  let face = 0;
+  let dir = 0;
+  let turn = "";
   for (let i = 0; i < length; i++) {
     do {
-      turnNum = randRange(0, 17);
-    } while (turns[turnNum].charAt(0) == turns[lastTurn].charAt(0)) //Generate again if the same face is turning again
-    scramble += turns[turnNum]; //Add the turn to the scramble
-    lastTurn = turnNum; //Keep track of the last turn
+      axis = randRange(0, 2);
+    } while (axis == lastAxis)
+    face = randRange(0, 1);
+    dir = randRange(0, 2);
+    switch (axis) {
+      case 0:
+        turn = face == 0 ? "L" : "R";
+        turn += dir < 2 ? (dir == 0 ? " " : "' ") : "2 ";
+        break;
+      case 1:
+        turn = face == 0 ? "D" : "U";
+        turn += dir < 2 ? (dir == 0 ? " " : "' ") : "2 ";
+        break;
+      case 2:
+        turn = face == 0 ? "F" : "B";
+        turn += dir < 2 ? (dir == 0 ? " " : "' ") : "2 ";
+        break;
+    }
+    scramble += turn; //Add the turn to the scramble
+    lastAxis = axis; //Keep track of the last turn
   }
   return scramble;
 }
