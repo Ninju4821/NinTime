@@ -48,40 +48,38 @@ function GenerateScramble (length) {
   let lastTurn = null;
   let turnNum = 0;
   for (let i = 0; i < length; i++) {
-    turnNum = randRange(0, 11);
-    /*if (turnNum == lastTurn) {
-      switch (turnNum) {
-        case 0 || 1:
-          turnNum = 12;
-          break;
-        case 2 || 3:
-          turnNum = 13;
-          break;
-        case 4 || 5:
-          turnNum = 14;
-          break;
-        case 6 || 7:
-          turnNum = 15;
-          break;
-        case 8 || 9:
-          turnNum = 16;
-          break;
-        case 10 || 11:
-          turnNum = 17;
-          break;
-        default:
-          let firstNum = turnNum;
-          do {
+    do {
+      turnNum = randRange(0, 17);
+      if (turnNum == lastTurn) {
+        switch (turnNum) {
+          case 0 || 1:
+            turnNum = 12;
+            break;
+          case 2 || 3:
+            turnNum = 13;
+            break;
+          case 4 || 5:
+            turnNum = 14;
+            break;
+          case 6 || 7:
+            turnNum = 15;
+            break;
+          case 8 || 9:
+            turnNum = 16;
+            break;
+          case 10 || 11:
+            turnNum = 17;
+            break;
+          default:
             turnNum = randRange(0, 11);
-          } while (turnNum == firstNum)
+        }
       }
-    } */
-    if ((turnNum == (lastTurn % 2 == 0) ? lastTurn + 1 : lastTurn - 1) && lastTurn < 12 && turnNum < 12) {
-      let firstNum = turnNum;
-      do {
-        turnNum = randRange(0, 11);
-      } while (turnNum == firstNum || turnNum == lastTurn)
-    }
+      if (turns[turnNum].charAt(1) == "2") {
+        if (turns[turnNum].charAt(0) == turns[lastTurn].charAt(0)) {
+          turnNum = lastTurn % 2 == 0 ? lastTurn + 1 : lastTurn - 1;
+        }
+      }
+    } while (turnNum == (lastTurn % 2 == 0 ? lastTurn + 1 : lastTurn - 1))
     scramble += turns[turnNum];
     lastTurn = turnNum;
   }
@@ -91,7 +89,7 @@ function GenerateScramble (length) {
 function Loop () {
 
   if (isHolding && new Date() - holdStart >= 300) {
-    document.getElementById("timer").style = "text-align:center; font-size:100px; color:green";
+    document.getElementById("timer").style = "text-align:center; font-size:100px; color:lime";
   }
   
   if (isTiming) {
