@@ -6,22 +6,28 @@ let elapsed = 1;
 
 function Initialization() {
   console.log("init");
+  //Track keydown and keyup
   window.addEventListener("keydown", function(event) {InputDown(event.key)});
   window.addEventListener("keyup", function(event) {InputUp(event.key)});
+  //Start the loop
   window.requestAnimationFrame(Loop);
+  //Generate the first scramble
   document.getElementById("scramble").innerHTML = GenerateScramble(15);
 }
 
-function InputDown (the_Key) {
-  if (the_Key == " ") {
+function InputDown (theKey) {
+  //Only do the following for space down
+  if (theKey == " ") {
     console.log("space pressed");
-    if (!isTiming && !isHolding) {
+    if (!isTiming && !isHolding) { //If we are not timing or holding, start timing
       console.log("start hold");
+      //Make the timer red and start holding
       document.getElementById("timer").style = "text-align:center; font-size:100px; color:red";
       holdStart = new Date();
       isHolding = true;
-    } else if (isTiming) {
+    } else if (isTiming) { //If we are timing
       console.log("end time");
+      //Stop timing and generate a new scramble
       isTiming = false;
       document.getElementById("scramble").innerHTML = GenerateScramble(15);
     }
@@ -29,14 +35,17 @@ function InputDown (the_Key) {
 }
 
 function InputUp (the_Key) {
+    //Only do the following for space up
   if (the_Key == " ") {
     console.log("space let go");
-    if (isHolding && new Date() - holdStart >= 300) {
-      console.log("held for 0.3 seconds");
+    if (isHolding && new Date() - holdStart >= 500) { //If we have held for 5 seconds
+      console.log("held for 0.5 seconds");
+      //Start timing
       isTiming = true;
       start = new Date();
     }
     console.log("stop hold");
+    //Reset the timer color and stop holding
     document.getElementById("timer").style = "text-align:center; font-size:100px; color:black";
     isHolding = false;
   }
@@ -44,51 +53,24 @@ function InputUp (the_Key) {
 
 function GenerateScramble (length) {
   let scramble = "";
-  const turns = ["U ", "U' ", "R ", "R' ", "B ", "B' ", "L ", "L' ", "F ", "F' ", "D ", "D' ", "U2 ", "R2 ", "B2 ", "L2 ", "F2 ", "D2 "];
-  let lastTurn = null;
+  //Every possible turn
+  const turns = ["U ", "U' ", "R ", "R' ", "B ", "B' ", "L ", "L' ", "F ", "F' ", "D ", "D' ", "U2 ", "R2 ", "B2 ", "L2 ", "F2 ", "D2 ", "N "];
+  let lastTurn = 18; //Allows generation to work on the first cycle
   let turnNum = 0;
   for (let i = 0; i < length; i++) {
     do {
       turnNum = randRange(0, 17);
-      if (turnNum == lastTurn) {
-        switch (turnNum) {
-          case 0 || 1:
-            turnNum = 12;
-            break;
-          case 2 || 3:
-            turnNum = 13;
-            break;
-          case 4 || 5:
-            turnNum = 14;
-            break;
-          case 6 || 7:
-            turnNum = 15;
-            break;
-          case 8 || 9:
-            turnNum = 16;
-            break;
-          case 10 || 11:
-            turnNum = 17;
-            break;
-          default:
-            turnNum = randRange(0, 11);
-        }
-      }
-      if (turns[turnNum].charAt(1) == "2") {
-        if (turns[turnNum].charAt(0) == turns[lastTurn].charAt(0)) {
-          turnNum = lastTurn % 2 == 0 ? lastTurn + 1 : lastTurn - 1;
-        }
-      }
-    } while (turnNum == (lastTurn % 2 == 0 ? lastTurn + 1 : lastTurn - 1))
-    scramble += turns[turnNum];
-    lastTurn = turnNum;
+    } while (turns[turnNum].charAt(0) == turns[lastTurn].charAt(0)) //Generate again if the same face is turning again
+    scramble += turns[turnNum]; //Add the turn to the scramble
+    lastTurn = turnNum; //Keep track of the last turn
   }
   return scramble;
 }
 
 function Loop () {
 
-  if (isHolding && new Date() - holdStart >= 300) {
+  //Make the timer green when ready to start
+  if (isHolding && new Date() - holdStart >= 500) {
     document.getElementById("timer").style = "text-align:center; font-size:100px; color:lime";
   }
   
@@ -114,6 +96,7 @@ function Loop () {
     let dispMilliseconds = milliseconds.toString().padStart(3, '0');
     document.getElementById("timer").innerHTML = hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
   }
+  //Continue to loop
   window.requestAnimationFrame(Loop);
 }
 
