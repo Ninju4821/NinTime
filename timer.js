@@ -1,7 +1,12 @@
-let isTiming = false;
+let canInspect = true;
+let isInspecting = false;
 let isHolding = false;
+let isTiming = false;
+let inspectStart = null;
 let holdStart = null;
-let start = new Date();
+let timeStart = null;
+let timePenalty = 0;
+let dnf = false;
 let elapsed = 1;
 
 function Initialization() {
@@ -19,7 +24,7 @@ function InputDown (theKey) {
   //Only do the following for space down
   if (theKey == " ") {
     console.log("space pressed");
-    if (!isTiming && !isHolding) { //If we are not timing or holding, start timing
+    if (isInspecting && !isHolding) { //If we are not timing or holding, start timing
       console.log("start hold");
       //Make the timer red and start holding
       document.getElementById("timer").style = "text-align:center; font-size:100px; color:red";
@@ -28,19 +33,38 @@ function InputDown (theKey) {
     } else if (isTiming) { //If we are timing
       console.log("end time");
       //Stop timing and generate a new scramble
+      canInspect = false;
       isTiming = false;
       document.getElementById("scramble").innerHTML = GenerateScramble(15);
+      timePenalty = 0;
+      dnf = false;
+    }
+  }
+  if (theKey == "Escape") {
+    if (isInspecting) {
+      isInspecting = false;
+      document.getElementById("timer").innerHTML = "0:00.000";
+      timePenalty = 0;
+      dnf = false;
     }
   }
 }
 
-function InputUp (the_Key) {
-    //Only do the following for space up
-  if (the_Key == " ") {
+function InputUp (theKey) {
+  //Only do the following for space up
+  if (theKey == " ") {
     console.log("space let go");
+    if (!isInspecting && canInspect) {
+      isInspecting = true;
+      inspectStart = new Date();
+    }
+    if (!canInspect) {
+      canInspect = true;
+    }
     if (isHolding && new Date() - holdStart >= 500) { //If we have held for 5 seconds
       console.log("held for 0.5 seconds");
       //Start timing
+      isInspecting = false;
       isTiming = true;
       start = new Date();
     }
@@ -86,6 +110,21 @@ function GenerateScramble (length) {
 
 function Loop () {
 
+
+  if (isInspecting) {
+    let inspectionTime = new Date() - inspectStart;
+    if (inspectionTime <= 15000) {
+      document.getElementById("timer").innerHTML = Math.floor(inspectionTime / 1000);
+    } else if (inspectionTime <= 17000) {
+      document.getElementById("timer").innerHTML = String(Math.floor(inspectionTime / 1000)) + " (+2)";
+      timePenalty = 2000;
+    } else {
+      timePenalty = 0;
+      document.getElementById("timer").innerHTML = "DNF";
+      dnf = true;
+    }
+  }
+
   //Make the timer green when ready to start
   if (isHolding && new Date() - holdStart >= 500) {
     document.getElementById("timer").style = "text-align:center; font-size:100px; color:lime";
@@ -94,6 +133,7 @@ function Loop () {
   if (isTiming) {
     //Get the time elapsed in total milliseconds
     elapsed = new Date() - start;
+    elapsed += timePenalty;
     //Find the seconds of those milliseconds
     let seconds = Math.floor(elapsed / 1000);
     //Find the milliseconds alone
@@ -112,6 +152,12 @@ function Loop () {
     let dispSeconds = seconds.toString().padStart(2, '0');
     let dispMilliseconds = milliseconds.toString().padStart(3, '0');
     document.getElementById("timer").innerHTML = hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
+    if (timePenalty != 0) {
+      document.getElementById("timer").innerHTML += "+";
+    }
+    if (dnf) {
+      document.getElementById("timer").innerHTML += " (DNF)";
+    }
   }
   //Continue to loop
   window.requestAnimationFrame(Loop);
