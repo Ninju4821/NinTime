@@ -8,6 +8,7 @@ let timeStart = null;
 let timePenalty = 0;
 let dnf = false;
 let elapsed = 1;
+let tableTimes = [39454, 40231, 38422];
 
 function Initialization() {
   console.log("init");
@@ -18,6 +19,12 @@ function Initialization() {
   window.requestAnimationFrame(Loop);
   //Generate the first scramble
   document.getElementById("scramble").innerHTML = GenerateScramble(15);
+  let cookieList = getCookie("times");
+  if (cookieList != "") {
+    let cookieListArray = cookieList.split('-');
+    cookieListArray.forEach(string => tableTimes.push(parseInt(string)));
+  }
+  tableTimes.forEach(time => addToTable(time));
 }
 
 function InputDown (theKey) {
@@ -38,6 +45,8 @@ function InputDown (theKey) {
       document.getElementById("scramble").innerHTML = GenerateScramble(15);
       timePenalty = 0;
       dnf = false;
+      tableTimes.unshift(elapsed);
+      addToTable(elapsed);
     }
   }
   if (theKey == "Escape") {
@@ -108,6 +117,32 @@ function GenerateScramble (length) {
   return scramble;
 }
 
+function addToTable (time) {
+  //Find the seconds of those milliseconds
+  let seconds = Math.floor(time / 1000);
+  //Find the milliseconds alone
+  let milliseconds = time - seconds * 1000;
+  //Find the minutes of those seconds
+  let minutes = Math.floor(seconds / 60);
+  //Correct the seconds to not include the minutes
+  seconds = seconds - minutes * 60;
+  //Find the hours of those minutes
+  let hours = Math.floor(minutes / 60);
+  //Correct the minutes to not include the hours
+  minutes = minutes - hours * 60;
+  //Convert times to padded strings
+  let dispHours = String(hours);
+  let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
+  let dispSeconds = seconds.toString().padStart(2, '0');
+  let dispMilliseconds = milliseconds.toString().padStart(3, '0');
+  document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>" + document.getElementById("table").innerHTML.slice(24);
+  let cookieString = "";
+  tableTimes.forEach(time => cookieString += String(time) + "-");
+  setCookie("times", cookieString, 9999);
+  console.log(tableTimes);
+  console.log(getCookie("times"));
+}
+
 function Loop () {
 
 
@@ -165,4 +200,31 @@ function Loop () {
 
 function randRange(min, max) { // min and max included 
   return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function test () {
+  document.getElementById("table").innerHTML += "<tr><td>0:00.000</td></tr>";
+}
+
+function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
 }
