@@ -1,3 +1,4 @@
+let isInit = true;
 let canInspect = true;
 let isInspecting = false;
 let isHolding = false;
@@ -23,8 +24,9 @@ function Initialization() {
   if (cookieList != "") {
     let cookieListArray = cookieList.split('-');
     cookieListArray.forEach(string => tableTimes.push(parseInt(string)));
+    tableTimes.forEach(time => addToTable(time));
   }
-  tableTimes.forEach(time => addToTable(time));
+  isInit = false;
 }
 
 function InputDown (theKey) {
@@ -135,9 +137,15 @@ function addToTable (time) {
   let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
   let dispSeconds = seconds.toString().padStart(2, '0');
   let dispMilliseconds = milliseconds.toString().padStart(3, '0');
-  document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>" + document.getElementById("table").innerHTML.slice(24);
+  if (isInit) {
+    document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + document.getElementById("table").innerHTML.slice(24) + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>";
+  } else {
+    document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>" + document.getElementById("table").innerHTML.slice(24);
+  }
+  //cookie
   let cookieString = "";
   tableTimes.forEach(time => cookieString += String(time) + "-");
+  cookieString = cookieString.substring(0, cookieString.length-1);
   setCookie("times", cookieString, 9999);
   console.log(tableTimes);
   console.log(getCookie("times"));
