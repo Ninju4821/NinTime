@@ -8,7 +8,7 @@ let timeStart = null;
 let timePenalty = 0;
 let dnf = false;
 let elapsed = 1;
-let tableTimes = [39454, 40231, 38422];
+let tableTimes = [];
 
 function Initialization() {
   console.log("init");
