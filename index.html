@@ -1,4 +1,14 @@
 <html>
+  <style>
+  table, th, td {
+    border:1px solid black;
+    border-collapse: collapse;
+    width:20%;
+  }
+  td {
+    text-align: center;
+  }
+  </style>
   <head>
     <script src="timer.js"></script>
     <title>NinTime</title>
@@ -6,7 +16,8 @@
   <body onload="Initialization()">
     <h1 id="scramble" style="text-align:center;  font-size:60px; color:black">U R F L B D U' R' F' L' B' D'</h1>
     <p id="timer" style="text-align:center; font-size:100px; color:black">0:00.000</p>
-    <table id="table"><tr><th>Time</th></tr></table>
-    <button onclick="test()">test</button>
+    <table id="avgTable"><tr><th>Session Mean</th><th>mo3</th><th>ao5</th><th>ao12</th></tr></table>
+    <br>
+    <table id="timeTable"><tr><th>Time</th></tr></table>
   </body>
 </html>

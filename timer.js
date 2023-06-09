@@ -10,6 +10,8 @@ let timePenalty = 0;
 let dnf = false;
 let elapsed = 1;
 let tableTimes = [];
+//[session mean, mo3, ao5, ao12]
+let averageTimes = [];
 
 function Initialization() {
   console.log("init");
@@ -24,7 +26,7 @@ function Initialization() {
   if (cookieList != "") {
     let cookieListArray = cookieList.split('-');
     cookieListArray.forEach(string => tableTimes.push(parseInt(string)));
-    tableTimes.forEach(time => addToTable(time));
+    tableTimes.forEach(time => AddToTable(time));
   }
   isInit = false;
 }
@@ -48,7 +50,8 @@ function InputDown (theKey) {
       timePenalty = 0;
       dnf = false;
       tableTimes.unshift(elapsed);
-      addToTable(elapsed);
+      AddToTable(elapsed);
+      UpdateAverages();
     }
   }
   if (theKey == "Escape") {
@@ -119,28 +122,11 @@ function GenerateScramble (length) {
   return scramble;
 }
 
-function addToTable (time) {
-  //Find the seconds of those milliseconds
-  let seconds = Math.floor(time / 1000);
-  //Find the milliseconds alone
-  let milliseconds = time - seconds * 1000;
-  //Find the minutes of those seconds
-  let minutes = Math.floor(seconds / 60);
-  //Correct the seconds to not include the minutes
-  seconds = seconds - minutes * 60;
-  //Find the hours of those minutes
-  let hours = Math.floor(minutes / 60);
-  //Correct the minutes to not include the hours
-  minutes = minutes - hours * 60;
-  //Convert times to padded strings
-  let dispHours = String(hours);
-  let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
-  let dispSeconds = seconds.toString().padStart(2, '0');
-  let dispMilliseconds = milliseconds.toString().padStart(3, '0');
+function AddToTable (time) {
   if (isInit) {
-    document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + document.getElementById("table").innerHTML.slice(24) + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>";
+    document.getElementById("timeTable").innerHTML = "<tr><th>Time</th></tr>" + document.getElementById("timeTable").innerHTML.slice(24) + "<tr><td>" + formatTime(time) + "</td></tr>";
   } else {
-    document.getElementById("table").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + (hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds) + "</td></tr>" + document.getElementById("table").innerHTML.slice(24);
+    document.getElementById("timeTable").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + formatTime(time) + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(24);
   }
   //cookie
   let cookieString = "";
@@ -149,6 +135,30 @@ function addToTable (time) {
   setCookie("times", cookieString, 9999);
   console.log(tableTimes);
   console.log(getCookie("times"));
+}
+
+function UpdateAverages () {
+  let sessionMean = 0;
+  let mo3 = 0;
+  let ao5 = 0;
+  let ao12 = 0;
+  if (tableTimes.length != 0) {
+    tableTimes.forEach(time => sessionMean += time);
+    sessionMean /= tableTimes.length;
+  }
+  if (tableTimes.length >= 3) {
+    for (let i = 0; i < 3; i++) {
+      mo3 += tableTimes[i];
+    }
+    mo3 /= 3;
+  }
+  if (tableTimes.length >= 5) {
+    ao5 = calcAvg(tableTimes.slice(5));
+  }
+  if (tableTimes.length >= 12) {
+    ao12 = calcAvg(tableTimes.slice(12));
+  }
+  document.getElementById("avgTable").innerHTML = "<tr><th>Session Mean</th><th>mo3</th><th>ao5</th><th>ao12</th></tr>" + "<tr>" + ("<td>" + formatTime(sessionMean) + "</td>") + ("<td>" + formatTime(mo3) + "</td>") + ("<td>" + formatTime(ao5) + "</td>") + ("<td>" + formatTime(ao12) + "</td>") + "</tr>";
 }
 
 function Loop () {
@@ -177,24 +187,7 @@ function Loop () {
     //Get the time elapsed in total milliseconds
     elapsed = new Date() - start;
     elapsed += timePenalty;
-    //Find the seconds of those milliseconds
-    let seconds = Math.floor(elapsed / 1000);
-    //Find the milliseconds alone
-    let milliseconds = elapsed - seconds * 1000;
-    //Find the minutes of those seconds
-    let minutes = Math.floor(seconds / 60);
-    //Correct the seconds to not include the minutes
-    seconds = seconds - minutes * 60;
-    //Find the hours of those minutes
-    let hours = Math.floor(minutes / 60);
-    //Correct the minutes to not include the hours
-    minutes = minutes - hours * 60;
-    //Convert times to padded strings
-    let dispHours = String(hours);
-    let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
-    let dispSeconds = seconds.toString().padStart(2, '0');
-    let dispMilliseconds = milliseconds.toString().padStart(3, '0');
-    document.getElementById("timer").innerHTML = hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
+    document.getElementById("timer").innerHTML = formatTime(elapsed);
     if (timePenalty != 0) {
       document.getElementById("timer").innerHTML += "+";
     }
@@ -206,12 +199,56 @@ function Loop () {
   window.requestAnimationFrame(Loop);
 }
 
-function randRange(min, max) { // min and max included 
-  return Math.floor(Math.random() * (max - min + 1) + min)
+//Utilities below
+
+function formatTime (time) {
+  //Find the seconds of those milliseconds
+  let seconds = Math.floor(time / 1000);
+  //Find the milliseconds alone
+  let milliseconds = time - seconds * 1000;
+  //Round the milliseconds to only have three decimal places
+  milliseconds = parseInt(String(milliseconds).substring(0, 3));
+  //Find the minutes of those seconds
+  let minutes = Math.floor(seconds / 60);
+  //Correct the seconds to not include the minutes
+  seconds = seconds - minutes * 60;
+  //Find the hours of those minutes
+  let hours = Math.floor(minutes / 60);
+  //Correct the minutes to not include the hours
+  minutes = minutes - hours * 60;
+  //Convert times to padded strings
+  let dispHours = String(hours);
+  let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
+  let dispSeconds = seconds.toString().padStart(2, '0');
+  let dispMilliseconds = milliseconds.toString().padStart(3, '0');
+  return hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
 }
 
-function test () {
-  document.getElementById("table").innerHTML += "<tr><td>0:00.000</td></tr>";
+function calcAvg (times) {
+  console.log("times are " + times);
+  let shortestTime = Infinity;
+  let longestTime = 0;
+  let newTimes = [];
+  let average = 0;
+  for(let i = 0; i < times.length; i++) {
+    if (times[i] < shortestTime) {
+      shortestTime = times[i];
+    } else if (times[i] > longestTime) {
+      longestTime = times[i];
+    }
+  }
+  for (let i = 0; i < times.length; i++) {
+    if (times[i] != shortestTime || times[i] != longestTime) {
+      newTimes.push(times[i]);
+    }
+  }
+  newTimes.forEach(time => average += time);
+  average /= newTimes.length;
+  return average;
+}
+
+function randRange(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 function setCookie(cname, cvalue, exdays) {
