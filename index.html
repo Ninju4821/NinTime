@@ -1,23 +1,33 @@
 <html>
   <style>
-  table, th, td {
-    border:1px solid black;
-    border-collapse: collapse;
-    width:20%;
-  }
-  td {
-    text-align: center;
-  }
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    table {
+      width: 100%;
+    }
+    td {
+      text-align: center;
+    }
+    div {
+      width: 20%;
+      height: 50%;
+      overflow: auto;
+    }
   </style>
   <head>
     <script src="timer.js"></script>
     <title>NinTime</title>
   </head>
   <body onload="Initialization()">
-    <h1 id="scramble" style="text-align:center;  font-size:60px; color:black">U R F L B D U' R' F' L' B' D'</h1>
-    <p id="timer" style="text-align:center; font-size:100px; color:black">0:00.000</p>
-    <table id="avgTable"><tr><th>Session Mean</th><th>mo3</th><th>ao5</th><th>ao12</th></tr></table>
-    <br>
-    <table id="timeTable"><tr><th>Time</th></tr></table>
+    <h1 id="scramble" style="text-align:center;  font-size:40px; color:black;">U R F L B D U' R' F' L' B' D'</h1>
+    <p id="timer" style="text-align:center; font-size:80px; color:black;">0:00.000</p>
+    <div>
+      <table id="meanTable"><tr><th>Session Mean:</th></tr><tr><td>0:00.000</td></tr></table>
+      <table id="sessionTable"><tr><th></th><th>Current:</th><th>Best:</th></tr><tr><th>Single:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>mo3:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao5:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao12:</th><td>0:00.000</td><td>0:00.000</td></tr></table>
+      <br>
+      <table id="timeTable"><tr><th>Times</th></tr></table>
+  </div>
   </body>
 </html>

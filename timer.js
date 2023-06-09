@@ -12,6 +12,8 @@ let elapsed = 1;
 let tableTimes = [];
 //[session mean, mo3, ao5, ao12]
 let averageTimes = [];
+//[single, mo3, ao5, ao12]
+let bestTimes = [Infinity, Infinity, Infinity, Infinity];
 
 function Initialization() {
   console.log("init");
@@ -21,12 +23,20 @@ function Initialization() {
   //Start the loop
   window.requestAnimationFrame(Loop);
   //Generate the first scramble
-  document.getElementById("scramble").innerHTML = GenerateScramble(15);
-  let cookieList = getCookie("times");
-  if (cookieList != "") {
-    let cookieListArray = cookieList.split('-');
-    cookieListArray.forEach(string => tableTimes.push(parseInt(string)));
+  document.getElementById("scramble").innerHTML = GenerateScramble(25);
+  let cookieTimeList = getCookie("times");
+  let cookieBestList = getCookie("bestTimes");
+  if (cookieTimeList != "") {
+    let cookieTimeListArray = cookieTimeList.split('-');
+    cookieTimeListArray.forEach(string => tableTimes.push(parseInt(string)));
     tableTimes.forEach(time => AddToTable(time));
+    UpdateAverages();
+  }
+  if (cookieBestList != "") {
+    let cookieBestListArray = cookieBestList.split('-');
+    for (let i = 0; i < 4; i++) {
+      bestTimes[i] = cookieBestListArray[i];
+    }
     UpdateAverages();
   }
   isInit = false;
@@ -39,7 +49,7 @@ function InputDown (theKey) {
     if (isInspecting && !isHolding) { //If we are not timing or holding, start timing
       console.log("start hold");
       //Make the timer red and start holding
-      document.getElementById("timer").style = "text-align:center; font-size:100px; color:red";
+      document.getElementById("timer").style = "text-align:center; font-size:80px; color:red";
       holdStart = new Date();
       isHolding = true;
     } else if (isTiming) { //If we are timing
@@ -47,7 +57,7 @@ function InputDown (theKey) {
       //Stop timing and generate a new scramble
       canInspect = false;
       isTiming = false;
-      document.getElementById("scramble").innerHTML = GenerateScramble(15);
+      document.getElementById("scramble").innerHTML = GenerateScramble(25);
       timePenalty = 0;
       dnf = false;
       tableTimes.unshift(elapsed);
@@ -85,7 +95,7 @@ function InputUp (theKey) {
     }
     console.log("stop hold");
     //Reset the timer color and stop holding
-    document.getElementById("timer").style = "text-align:center; font-size:100px; color:black";
+    document.getElementById("timer").style = "text-align:center; font-size:80px; color:black";
     isHolding = false;
   }
 }
@@ -125,9 +135,9 @@ function GenerateScramble (length) {
 
 function AddToTable (time) {
   if (isInit) {
-    document.getElementById("timeTable").innerHTML = "<tr><th>Time</th></tr>" + document.getElementById("timeTable").innerHTML.slice(24) + "<tr><td>" + formatTime(time) + "</td></tr>";
+    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + document.getElementById("timeTable").innerHTML.slice(25) + "<tr><td>" + formatTime(time) + "</td></tr>";
   } else {
-    document.getElementById("timeTable").innerHTML = "<tr><th>Time</th></tr>" + "<tr><td>" + formatTime(time) + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(24);
+    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + "<tr><td>" + formatTime(time) + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(25);
   }
   //cookie
   let cookieString = "";
@@ -154,12 +164,48 @@ function UpdateAverages () {
     mo3 /= 3;
   }
   if (tableTimes.length >= 5) {
-    ao5 = calcAvg(tableTimes.slice(5));
+    ao5 = calcAvg(tableTimes.slice(0, 5));
   }
   if (tableTimes.length >= 12) {
-    ao12 = calcAvg(tableTimes.slice(12));
+    ao12 = calcAvg(tableTimes.slice(0, 12));
   }
-  document.getElementById("avgTable").innerHTML = "<tr><th>Session Mean</th><th>mo3</th><th>ao5</th><th>ao12</th></tr>" + "<tr>" + ("<td>" + formatTime(sessionMean) + "</td>") + ("<td>" + formatTime(mo3) + "</td>") + ("<td>" + formatTime(ao5) + "</td>") + ("<td>" + formatTime(ao12) + "</td>") + "</tr>";
+  if (tableTimes[0] < bestTimes[0]) {
+    bestTimes[0] = tableTimes[0];
+  }
+  if (mo3 < bestTimes[1] && mo3 != 0) {
+    bestTimes[1] = mo3;
+  }
+  if (ao5 < bestTimes[2] && ao5 != 0) {
+    bestTimes[2] = ao5;
+  }
+  if (ao12 < bestTimes[3] && ao12 != 0) {
+    bestTimes[3] = ao12;
+  }
+  document.getElementById("meanTable").innerHTML = "<tr><th>Session Mean:</th></tr><tr><td>" + formatTime(sessionMean) + "</td></tr>";
+  document.getElementById("sessionTable").innerHTML = "<tr><th></th><th>Current:</th><th>Best:</th></tr>"
+  + "<tr><th>Single:</th>" 
+    + "<td>" + formatTime(elapsed) + "</td>" 
+    + "<td>" + formatTime(bestTimes[0]) + "</td>"
+  + "</tr>"
+  + "<tr>"
+    + "<th>mo3:</th>"
+    + "<td>" + formatTime(mo3) + "</td>"
+    + "<td>" + formatTime(bestTimes[1]) + "</td>"
+  + "</tr>"
+  + "<tr>"
+    + "<th>ao5:</th>"
+    + "<td>" + formatTime(ao5) + "</td>"
+    + "<td>" + formatTime(bestTimes[2]) + "</td>"
+  + "</tr>"
+  + "<tr>"
+    + "<th>ao12:</th>"
+    + "<td>" + formatTime(ao12) + "</td>"
+    + "<td>" + formatTime(bestTimes[3]) + "</td>"
+  + "</tr>";
+  let bestTimesString = "";
+  bestTimes.forEach(time => bestTimesString += String(time) + "-");
+  bestTimesString = bestTimesString.substring(0, bestTimesString.length-1);
+  setCookie("bestTimes", bestTimesString, 9999);
 }
 
 function Loop () {
@@ -181,7 +227,7 @@ function Loop () {
 
   //Make the timer green when ready to start
   if (isHolding && new Date() - holdStart >= 500) {
-    document.getElementById("timer").style = "text-align:center; font-size:100px; color:lime";
+    document.getElementById("timer").style = "text-align:center; font-size:80px; color:lime";
   }
   
   if (isTiming) {
@@ -203,6 +249,9 @@ function Loop () {
 //Utilities below
 
 function formatTime (time) {
+  if (time == Infinity) {
+    return "0:00.000";
+  }
   //Find the seconds of those milliseconds
   let seconds = Math.floor(time / 1000);
   //Find the milliseconds alone
@@ -234,15 +283,17 @@ function calcAvg (times) {
   for(let i = 0; i < times.length; i++) {
     if (times[i] < shortestTime) {
       shortestTime = times[i];
-    } else if (times[i] > longestTime) {
+    }
+    if (times[i] > longestTime) {
       longestTime = times[i];
     }
   }
   for (let i = 0; i < times.length; i++) {
-    if (times[i] != shortestTime || times[i] != longestTime) {
+    if (times[i] != shortestTime && times[i] != longestTime) {
       newTimes.push(times[i]);
     }
   }
+  console.log(newTimes);
   newTimes.forEach(time => average += time);
   average /= newTimes.length;
   return average;
