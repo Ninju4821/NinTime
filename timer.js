@@ -27,6 +27,7 @@ function Initialization() {
     let cookieListArray = cookieList.split('-');
     cookieListArray.forEach(string => tableTimes.push(parseInt(string)));
     tableTimes.forEach(time => AddToTable(time));
+    UpdateAverages();
   }
   isInit = false;
 }
