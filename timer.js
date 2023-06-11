@@ -9,7 +9,8 @@ let timeStart = null;
 let timePenalty = 0;
 let dnf = false;
 let elapsed = 1;
-let tableTimes = [];
+let tableTimes = []; //TODO: Keep track of plus twos in the array (and cookie)
+let timeModifiers = [];
 //[session mean, mo3, ao5, ao12]
 let averageTimes = [];
 //[single, mo3, ao5, ao12]
@@ -61,6 +62,7 @@ function InputDown (theKey) {
       timePenalty = 0;
       dnf = false;
       tableTimes.unshift(elapsed);
+      timeModifiers.unshift(timePenalty == 0 ? "-" : "+-");
       AddToTable(elapsed);
       UpdateAverages();
     }
@@ -137,7 +139,7 @@ function AddToTable (time) {
   if (isInit) {
     document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + document.getElementById("timeTable").innerHTML.slice(25) + "<tr><td>" + formatTime(time) + "</td></tr>";
   } else {
-    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + "<tr><td>" + formatTime(time) + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(25);
+    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + "<tr><td>" + formatTime(time) + (timePenalty != 0 ? "+" : "") + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(25);
   }
   //cookie
   let cookieString = "";
