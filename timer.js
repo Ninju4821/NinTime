@@ -50,7 +50,7 @@ function InputDown (theKey) {
     if (isInspecting && !isHolding) { //If we are not timing or holding, start timing
       console.log("start hold");
       //Make the timer red and start holding
-      document.getElementById("timer").style = "text-align:center; font-size:80px; color:red";
+      document.getElementById("timer").style = "text-align:center; font-size:80px; color:red; height:10%;";
       holdStart = new Date();
       isHolding = true;
     } else if (isTiming) { //If we are timing
@@ -97,7 +97,7 @@ function InputUp (theKey) {
     }
     console.log("stop hold");
     //Reset the timer color and stop holding
-    document.getElementById("timer").style = "text-align:center; font-size:80px; color:black";
+    document.getElementById("timer").style = "text-align:center; font-size:80px; color:black; height:10%;";
     isHolding = false;
   }
 }
@@ -229,7 +229,7 @@ function Loop () {
 
   //Make the timer green when ready to start
   if (isHolding && new Date() - holdStart >= 500) {
-    document.getElementById("timer").style = "text-align:center; font-size:80px; color:lime";
+    document.getElementById("timer").style = "text-align:center; font-size:80px; color:lime; height:10%;";
   }
   
   if (isTiming) {
@@ -250,12 +250,13 @@ function Loop () {
 
 //Utilities below
 
-function delete () {
+function Delete () {
   tableTimes = [];
   bestTimes = [Infinity, Infinity, Infinity, Infinity];
   averageTimes = [];
   UpdateAverages();
   document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
+  document.getElementById("deleteButton").blur();
 }
 
 function formatTime (time) {

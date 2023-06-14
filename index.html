@@ -21,14 +21,14 @@
     <title>NinTime</title>
   </head>
   <body onload="Initialization()">
-    <h1 id="scramble" style="text-align:center;  font-size:40px; color:black;">U R F L B D U' R' F' L' B' D'</h1>
-    <p id="timer" style="text-align:center; font-size:80px; color:black;">0:00.000</p>
+    <h1 id="scramble" style="text-align:center;  font-size:40px; color:black; height:10%;">U R F L B D U' R' F' L' B' D'</h1>
+    <p id="timer" style="text-align:center; font-size:80px; color:black; height:10%;">0:00.000</p>
     <div>
       <table id="meanTable"><tr><th>Session Mean:</th></tr><tr><td>0:00.000</td></tr></table>
       <table id="sessionTable"><tr><th></th><th>Current:</th><th>Best:</th></tr><tr><th>Single:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>mo3:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao5:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao12:</th><td>0:00.000</td><td>0:00.000</td></tr></table>
       <br>
       <table id="timeTable"><tr><th>Times</th></tr></table>
     </div>
-    <button action="delete()">Delete</button>
+    <button onclick="Delete()" id="deleteButton">Delete</button>
   </body>
 </html>
