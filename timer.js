@@ -250,6 +250,14 @@ function Loop () {
 
 //Utilities below
 
+function delete () {
+  tableTimes = [];
+  bestTimes = [Infinity, Infinity, Infinity, Infinity];
+  averageTimes = [];
+  UpdateAverages();
+  document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
+}
+
 function formatTime (time) {
   if (time == Infinity) {
     return "0:00.000";
