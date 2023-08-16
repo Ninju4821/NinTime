@@ -10,7 +10,7 @@ let timePenalty = 0;
 let dnf = false;
 let elapsed = 0;
 let tableTimes = []; //TODO: Keep track of plus twos in the array (and cookie)
-let timeModifiers = [];
+let timeModifiers = []; //0 for none, 1 for +2, 2 for DNF
 //[session mean, mo3, ao5, ao12]
 let averageTimes = [];
 //[single, mo3, ao5, ao12]
@@ -30,7 +30,7 @@ function Initialization() {
   if (cookieTimeList != "") {
     let cookieTimeListArray = cookieTimeList.split('-');
     cookieTimeListArray.forEach(string => tableTimes.push(parseInt(string)));
-    tableTimes.forEach(time => AddToTable(time));
+    SetTable();
     UpdateAverages();
   }
   if (cookieBestList != "") {
@@ -59,11 +59,11 @@ function InputDown (theKey) {
       canInspect = false;
       isTiming = false;
       document.getElementById("scramble").innerHTML = GenerateScramble(25);
+      tableTimes.unshift(elapsed);
+      timeModifiers.unshift(dnf ? 2 : (timePenalty != 0 ? 1 : 0));
+      AddToTable(elapsed);
       timePenalty = 0;
       dnf = false;
-      tableTimes.unshift(elapsed);
-      timeModifiers.unshift(timePenalty == 0 ? "-" : "+-");
-      AddToTable(elapsed);
       UpdateAverages();
     }
   }
@@ -135,12 +135,9 @@ function GenerateScramble (length) {
   return scramble;
 }
 
-function AddToTable (time) {
-  if (isInit) {
-    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + document.getElementById("timeTable").innerHTML.slice(25) + "<tr><td>" + formatTime(time) + "</td></tr>";
-  } else {
-    document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>" + "<tr><td>" + formatTime(time) + (timePenalty != 0 ? "+" : "") + "</td></tr>" + document.getElementById("timeTable").innerHTML.slice(25);
-  }
+function SetTable () {
+  document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
+  tableTimes.forEach(time => document.getElementById("timeTable").innerHTML += "<tr><td>" + formatTime(time) + "</td></tr>");
   //cookie
   let cookieString = "";
   tableTimes.forEach(time => cookieString += String(time) + "-");
