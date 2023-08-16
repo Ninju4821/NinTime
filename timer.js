@@ -61,7 +61,7 @@ function InputDown (theKey) {
       document.getElementById("scramble").innerHTML = GenerateScramble(25);
       tableTimes.unshift(elapsed);
       timeModifiers.unshift(dnf ? 2 : (timePenalty != 0 ? 1 : 0));
-      AddToTable(elapsed);
+      SetTable(elapsed);
       timePenalty = 0;
       dnf = false;
       UpdateAverages();
