@@ -26,10 +26,13 @@ function Initialization() {
   //Generate the first scramble
   document.getElementById("scramble").innerHTML = GenerateScramble(25);
   let cookieTimeList = getCookie("times");
+  let cookieModifierList = getCookie("modifiers");
   let cookieBestList = getCookie("bestTimes");
   if (cookieTimeList != "") {
     let cookieTimeListArray = cookieTimeList.split('-');
     cookieTimeListArray.forEach(string => tableTimes.push(parseInt(string)));
+    let cookieModifierListArray = cookieModifierList.split('-');
+    cookieModifierListArray.forEach(string => timeModifiers.push(parseInt(string)));
     SetTable();
   }
   if (cookieBestList != "") {
