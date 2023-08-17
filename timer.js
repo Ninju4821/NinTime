@@ -146,7 +146,7 @@ function SetTable () {
   let timeCookieString = "";
   let modifierCookieString = "";
   tableTimes.forEach(time => timeCookieString += String(time) + "-");
-  timeCookieString = cookieString.substring(0, timeCookieString.length-1);
+  timeCookieString = timeCookieString.substring(0, timeCookieString.length-1);
   setCookie("times", timeCookieString, 9999);
   timeModifiers.forEach(modifier => modifierCookieString += String(modifier) + "-");
   timeCookieString = modifierCookieString.substring(0, modifierCookieString.length-1);
