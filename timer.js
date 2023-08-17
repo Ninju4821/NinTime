@@ -152,7 +152,7 @@ function SetTable () {
   timeCookieString = timeCookieString.substring(0, timeCookieString.length-1);
   setCookie("times", timeCookieString, 9999);
   timeModifiers.forEach(modifier => modifierCookieString += String(modifier) + "-");
-  timeCookieString = modifierCookieString.substring(0, modifierCookieString.length-1);
+  modifierCookieString = modifierCookieString.substring(0, modifierCookieString.length-1);
   setCookie("modifiers", modifierCookieString, 9999);
   console.log(tableTimes);
   console.log(getCookie("times"));
@@ -262,7 +262,11 @@ function Loop () {
 function Delete () {
   tableTimes = [];
   bestTimes = [Infinity, Infinity, Infinity, Infinity];
+  timeModifiers = [];
   averageTimes = [];
+  setCookie("times", "", 9999);
+  setCookie("modifiers", "", 9999);
+  setCookie("bestTimes", "", 9999);
   UpdateAverages();
   document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
   document.getElementById("deleteButton").blur();
