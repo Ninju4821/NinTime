@@ -9,7 +9,7 @@ let timeStart = null;
 let timePenalty = 0;
 let dnf = false;
 let elapsed = 0;
-let tableTimes = []; //TODO: Keep track of plus twos in the array (and cookie)
+let tableTimes = []; //- TODO: Keep track of plus twos in the array (and cookie)
 let timeModifiers = []; //0 for none, 1 for +2, 2 for DNF
 //[session mean, mo3, ao5, ao12]
 let averageTimes = [];
@@ -195,7 +195,7 @@ function UpdateAverages () {
   document.getElementById("meanTable").innerHTML = "<tr><th>Session Mean:</th></tr><tr><td>" + formatTime(sessionMean) + "</td></tr>";
   document.getElementById("sessionTable").innerHTML = "<tr><th></th><th>Current:</th><th>Best:</th></tr>"
   + "<tr><th>Single:</th>" 
-    + "<td>" + formatTime(elapsed != 0 ? elapsed : tableTimes[0]) + "</td>" 
+    + "<td>" + formatTime(elapsed != 0 ? elapsed : (tableTimes[0] != null ? tableTimes[0] : 0)) + "</td>" 
     + "<td>" + formatTime(bestTimes[0]) + "</td>"
   + "</tr>"
   + "<tr>"
