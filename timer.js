@@ -31,15 +31,14 @@ function Initialization() {
     let cookieTimeListArray = cookieTimeList.split('-');
     cookieTimeListArray.forEach(string => tableTimes.push(parseInt(string)));
     SetTable();
-    UpdateAverages();
   }
   if (cookieBestList != "") {
     let cookieBestListArray = cookieBestList.split('-');
     for (let i = 0; i < 4; i++) {
       bestTimes[i] = cookieBestListArray[i];
     }
-    UpdateAverages();
   }
+  UpdateAverages();
   isInit = false;
 }
 
@@ -137,14 +136,24 @@ function GenerateScramble (length) {
 
 function SetTable () {
   document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
-  tableTimes.forEach(time => document.getElementById("timeTable").innerHTML += "<tr><td>" + formatTime(time) + "</td></tr>");
+  for (let i = 0; i < tableTimes.length; i++) {
+    const time = formatTime(tableTimes[i]);
+    const modifier = timeModifiers[i] == 0 ? "" : "+";
+    let modifiedTime = timeModifiers[i] != 2 ? time + modifier : "DNF";
+    document.getElementById("timeTable").innerHTML += "<tr><td>" + modifiedTime + "</td></tr>";
+  }
   //cookie
-  let cookieString = "";
-  tableTimes.forEach(time => cookieString += String(time) + "-");
-  cookieString = cookieString.substring(0, cookieString.length-1);
-  setCookie("times", cookieString, 9999);
+  let timeCookieString = "";
+  let modifierCookieString = "";
+  tableTimes.forEach(time => timeCookieString += String(time) + "-");
+  timeCookieString = cookieString.substring(0, timeCookieString.length-1);
+  setCookie("times", timeCookieString, 9999);
+  timeModifiers.forEach(modifier => modifierCookieString += String(modifier) + "-");
+  timeCookieString = modifierCookieString.substring(0, modifierCookieString.length-1);
+  setCookie("modifiers", modifierCookieString, 9999);
   console.log(tableTimes);
   console.log(getCookie("times"));
+  console.log(getCookie("modifiers"));
 }
 
 function UpdateAverages () {
