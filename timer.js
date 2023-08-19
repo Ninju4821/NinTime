@@ -16,6 +16,10 @@ let averageTimes = [];
 //[single, mo3, ao5, ao12]
 let bestTimes = [Infinity, Infinity, Infinity, Infinity];
 
+
+//VERSION VAR: Important to set this every update
+let version = "3.1.0";
+
 function Initialization() {
   console.log("init");
   //Track keydown and keyup
@@ -43,6 +47,14 @@ function Initialization() {
   }
   UpdateAverages();
   isInit = false;
+
+
+  let lastVersion = getCookie("version");
+  if (version != lastVersion) {
+    //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
+  }
+  document.getElementById("version").innerHTML = "Version=" + version;
+  setCookie("version", version, 9999);
 }
 
 function InputDown (theKey) {
@@ -63,12 +75,13 @@ function InputDown (theKey) {
       document.getElementById("scramble").innerHTML = GenerateScramble(25);
       tableTimes.unshift(elapsed);
       timeModifiers.unshift(dnf ? 2 : (timePenalty != 0 ? 1 : 0));
-      SetTable(elapsed);
+      SetTable();
       timePenalty = 0;
       dnf = false;
       UpdateAverages();
     }
   }
+
   if (theKey == "Escape") {
     if (isInspecting) {
       isInspecting = false;
