@@ -18,7 +18,8 @@ let bestTimes = [Infinity, Infinity, Infinity, Infinity];
 
 
 //VERSION VAR: Important to set this every update
-let version = "3.1.0";
+let version = "3.1.1";
+
 
 function Initialization() {
   console.log("init");
@@ -52,6 +53,7 @@ function Initialization() {
   let lastVersion = getCookie("version");
   if (version != lastVersion) {
     //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
+    console.log("version changed");
   }
   document.getElementById("version").innerHTML = "Version=" + version;
   setCookie("version", version, 9999);
