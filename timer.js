@@ -12,17 +12,29 @@ let elapsed = 0;
 let tableTimes = []; //- TODO: Keep track of plus twos in the array (and cookie)
 let timeModifiers = []; //0 for none, 1 for +2, 2 for DNF
 //[session mean, mo3, ao5, ao12]
-let averageTimes = [];
+let averageTimes = []; //TODO: DNF's are worst times, and averages can DNF
 //[single, mo3, ao5, ao12]
 let bestTimes = [Infinity, Infinity, Infinity, Infinity];
 
 
 //VERSION VAR: Important to set this every update
-let version = "3.1.1";
+let version = "4.0.0";
 
 
 function Initialization() {
   console.log("init");
+
+
+  //Version code
+  let lastVersion = getCookie("version");
+  if (version != lastVersion) {
+    //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
+    console.log("version changed");
+  }
+  document.getElementById("version").innerHTML = "Version=" + version;
+  setCookie("version", version, 9999);
+
+
   //Track keydown and keyup
   window.addEventListener("keydown", function(event) {InputDown(event.key)});
   window.addEventListener("keyup", function(event) {InputUp(event.key)});
@@ -48,15 +60,6 @@ function Initialization() {
   }
   UpdateAverages();
   isInit = false;
-
-
-  let lastVersion = getCookie("version");
-  if (version != lastVersion) {
-    //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
-    console.log("version changed");
-  }
-  document.getElementById("version").innerHTML = "Version=" + version;
-  setCookie("version", version, 9999);
 }
 
 function InputDown (theKey) {
@@ -179,53 +182,69 @@ function UpdateAverages () {
   let mo3 = 0;
   let ao5 = 0;
   let ao12 = 0;
+  let dnfs = [false, false, false]; //mo3, ao5, ao12
+  let completeSolves = tableTimes.length;
   if (tableTimes.length != 0) {
-    tableTimes.forEach(time => sessionMean += time);
-    sessionMean /= tableTimes.length;
+    let timeCount = 0;
+    for (let i = 0; i < tableTimes.length; i++) {
+      sessionMean += timeModifiers[i] != 2 ? tableTimes[i] : 0;
+      timeCount += timeModifiers[i] != 2 ? 1 : 0;
+    }
+    sessionMean /= timeCount;
   }
   if (tableTimes.length >= 3) {
     for (let i = 0; i < 3; i++) {
       mo3 += tableTimes[i];
+      if (timeModifiers[i] == 2) {
+        dnfs[0] = true;
+      }
     }
     mo3 /= 3;
   }
   if (tableTimes.length >= 5) {
     ao5 = calcAvg(tableTimes.slice(0, 5));
+    if (ao5 == -1) {
+      dnfs[1] = true;
+    }
   }
   if (tableTimes.length >= 12) {
     ao12 = calcAvg(tableTimes.slice(0, 12));
+    if (ao12 == -1) {
+      dnfs[2] = true;
+    }
   }
   if (tableTimes[0] < bestTimes[0]) {
     bestTimes[0] = tableTimes[0];
   }
-  if (mo3 < bestTimes[1] && mo3 != 0) {
+  if (mo3 < bestTimes[1] && mo3 != 0 && !dnfs[0]) {
     bestTimes[1] = mo3;
   }
-  if (ao5 < bestTimes[2] && ao5 != 0) {
+  if (ao5 < bestTimes[2] && ao5 != 0 && !dnfs[1]) {
     bestTimes[2] = ao5;
   }
-  if (ao12 < bestTimes[3] && ao12 != 0) {
+  if (ao12 < bestTimes[3] && ao12 != 0 && !dnfs[2]) {
     bestTimes[3] = ao12;
   }
-  document.getElementById("meanTable").innerHTML = "<tr><th>Session Mean:</th></tr><tr><td>" + formatTime(sessionMean) + "</td></tr>";
+  timeModifiers.forEach(modifier => completeSolves -= modifier == 2 ? 1 : 0);
+  document.getElementById("meanTable").innerHTML = "<tr><th>Session Mean:</th></tr><tr><td>" + formatTime(sessionMean) + " (" + String(completeSolves) + "/" + String(tableTimes.length) + ")" + "</td></tr>";
   document.getElementById("sessionTable").innerHTML = "<tr><th></th><th>Current:</th><th>Best:</th></tr>"
   + "<tr><th>Single:</th>" 
-    + "<td>" + formatTime(elapsed != 0 ? elapsed : (tableTimes[0] != null ? tableTimes[0] : 0)) + "</td>" 
+    + "<td>" + (timeModifiers[0] != 2 ? formatTime(elapsed != 0 ? elapsed : (tableTimes[0] != null ? tableTimes[0] : 0)) : "DNF") + (timeModifiers[0] == 1 ? "+" : "") + "</td>" 
     + "<td>" + formatTime(bestTimes[0]) + "</td>"
   + "</tr>"
   + "<tr>"
     + "<th>mo3:</th>"
-    + "<td>" + formatTime(mo3) + "</td>"
+    + "<td>" + (!dnfs[0] ? formatTime(mo3) : "DNF") + "</td>"
     + "<td>" + formatTime(bestTimes[1]) + "</td>"
   + "</tr>"
   + "<tr>"
     + "<th>ao5:</th>"
-    + "<td>" + formatTime(ao5) + "</td>"
+    + "<td>" + (!dnfs[1] ? formatTime(ao5) : "DNF") + "</td>"
     + "<td>" + formatTime(bestTimes[2]) + "</td>"
   + "</tr>"
   + "<tr>"
     + "<th>ao12:</th>"
-    + "<td>" + formatTime(ao12) + "</td>"
+    + "<td>" + (!dnfs[2] ? formatTime(ao12) : "DNF") + "</td>"
     + "<td>" + formatTime(bestTimes[3]) + "</td>"
   + "</tr>";
   let bestTimesString = "";
@@ -316,19 +335,32 @@ function formatTime (time) {
 function calcAvg (times) {
   console.log("times are " + times);
   let shortestTime = Infinity;
+  let shortestIndex = -1;
   let longestTime = 0;
+  let longestIndex = -1;
   let newTimes = [];
   let average = 0;
+  let dnfCount = 0;
   for(let i = 0; i < times.length; i++) {
     if (times[i] < shortestTime) {
       shortestTime = times[i];
+      shortestIndex = i;
     }
     if (times[i] > longestTime) {
       longestTime = times[i];
+      longestIndex = i;
+    }
+    if (timeModifiers[i] == 2) {
+      dnfCount++;
+      longestTime = Infinity;
+      longestIndex = i;
     }
   }
+  if (dnfCount > 1) {
+    return -1;
+  }
   for (let i = 0; i < times.length; i++) {
-    if (times[i] != shortestTime && times[i] != longestTime) {
+    if (i != shortestIndex && i != longestIndex) {
       newTimes.push(times[i]);
     }
   }
