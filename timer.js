@@ -1,31 +1,28 @@
-let isInit = true;
-let canInspect = true;
-let isInspecting = false;
-let isHolding = false;
-let isTiming = false;
-let inspectStart = null;
-let holdStart = null;
-let timeStart = null;
-let timePenalty = 0;
-let dnf = false;
-let elapsed = 0;
-let tableTimes = []; //- TODO: Keep track of plus twos in the array (and cookie)
-let timeModifiers = []; //0 for none, 1 for +2, 2 for DNF
-//[session mean, mo3, ao5, ao12]
-let averageTimes = []; //TODO: DNF's are worst times, and averages can DNF
-//[single, mo3, ao5, ao12]
-let bestTimes = [Infinity, Infinity, Infinity, Infinity];
+let canInspect = true; //Can we start inspecting?
+let isInspecting = false; //Are we inspecting?
+let isHolding = false; //Are we holding during inspection?
+let isTiming = false; //Are we timing?
+let inspectStart = null; //What time did inspection start?
+let holdStart = null; //What time did we start holding?
+let timeStart = null; //What time did timing start?
+let timePenalty = 0; //What is our current time penalty (in ____)
+let dnf = false; //Is this solve a DNF?
+let elapsed = 0; //How long has passed since timeStart?
+let tableTimes = []; //Lists all saved times
+let timeModifiers = []; //Lists the modifiers for all saved times; 0 for none, 1 for +2, 2 for DNF
+let averageTimes = []; //Lists the current averages; [session mean, mo3, ao5, ao12]
+let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved times/averages; [single, mo3, ao5, ao12]
 
 
 //VERSION VAR: Important to set this every update
-let version = "4.0.0";
+let version = "4.0.1";
 
 
 function Initialization() {
   console.log("init");
 
 
-  //Version code
+  //Versioning code
   let lastVersion = getCookie("version");
   if (version != lastVersion) {
     //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
@@ -42,9 +39,11 @@ function Initialization() {
   window.requestAnimationFrame(Loop);
   //Generate the first scramble
   document.getElementById("scramble").innerHTML = GenerateScramble(25);
+  //Grab the time lists from the cookies
   let cookieTimeList = getCookie("times");
   let cookieModifierList = getCookie("modifiers");
   let cookieBestList = getCookie("bestTimes");
+  //If we have times add them to the lists and set the table
   if (cookieTimeList != "") {
     let cookieTimeListArray = cookieTimeList.split('-');
     cookieTimeListArray.forEach(string => tableTimes.push(parseInt(string)));
@@ -52,41 +51,49 @@ function Initialization() {
     cookieModifierListArray.forEach(string => timeModifiers.push(parseInt(string)));
     SetTable();
   }
+  //If we have best times,  add them to the list
   if (cookieBestList != "") {
     let cookieBestListArray = cookieBestList.split('-');
     for (let i = 0; i < 4; i++) {
       bestTimes[i] = cookieBestListArray[i];
     }
   }
+  //Update all the averages and their table
   UpdateAverages();
-  isInit = false;
 }
 
 function InputDown (theKey) {
   //Only do the following for space down
   if (theKey == " ") {
     console.log("space pressed");
-    if (isInspecting && !isHolding) { //If we are not timing or holding, start timing
+    if (isInspecting && !isHolding) { //If we're inspecting, and not yet holding, start holding
       console.log("start hold");
       //Make the timer red and start holding
       document.getElementById("timer").style = "text-align:center; font-size:80px; color:red; height:10%;";
       holdStart = new Date();
       isHolding = true;
-    } else if (isTiming) { //If we are timing
+    } else if (isTiming) { //If we're currently timing
       console.log("end time");
-      //Stop timing and generate a new scramble
+      //Don't let user inspect until the key goes up again
       canInspect = false;
+      //Stop timing
       isTiming = false;
+      //Generate a new scramble
       document.getElementById("scramble").innerHTML = GenerateScramble(25);
+      //Add the time and its modifier to the lists
       tableTimes.unshift(elapsed);
       timeModifiers.unshift(dnf ? 2 : (timePenalty != 0 ? 1 : 0));
+      //Set the table
       SetTable();
+      //Reset the penalties
       timePenalty = 0;
       dnf = false;
+      //Update the averages and bests
       UpdateAverages();
     }
   }
 
+  //If we press escape whilst inspecting, stop inspecting
   if (theKey == "Escape") {
     if (isInspecting) {
       isInspecting = false;
@@ -101,40 +108,52 @@ function InputUp (theKey) {
   //Only do the following for space up
   if (theKey == " ") {
     console.log("space let go");
+    //If we aren't inspecting and we are allowed to inspect, start inspecting
     if (!isInspecting && canInspect) {
       isInspecting = true;
       inspectStart = new Date();
     }
+    //If we can't inspect, start allowing inspection
     if (!canInspect) {
       canInspect = true;
     }
-    if (isHolding && new Date() - holdStart >= 500) { //If we have held for 5 seconds
+    //If we have held for 5 seconds
+    if (isHolding && new Date() - holdStart >= 500) {
       console.log("held for 0.5 seconds");
-      //Start timing
+      //Stop inspecting, start timing
       isInspecting = false;
       isTiming = true;
       start = new Date();
     }
+    //Always stop holding
     console.log("stop hold");
-    //Reset the timer color and stop holding
+    //Reset the timer color
     document.getElementById("timer").style = "text-align:center; font-size:80px; color:black; height:10%;";
     isHolding = false;
   }
 }
 
+//TODO: Generate random face (must be different), then random direction (including 2 moves) to add to the scramble
 function GenerateScramble (length) {
-  let scramble = "";
-  let lastAxis = 3;
-  let axis = 0;
-  let face = 0;
-  let dir = 0;
-  let turn = "";
+  let scramble = ""; //Scramble string
+  let lastAxis = 3; //Track the last axis used
+  let axis = 0; //Current axis
+  let face = 0; //Current face
+  let dir = 0; //Current direction
+  let turn = ""; //Current turn string
+  //Loop for the length of the scramble
   for (let i = 0; i < length; i++) {
+    //Get a new axis
     do {
       axis = randRange(0, 2);
     } while (axis == lastAxis)
+    //Get a random face
     face = randRange(0, 1);
+    //Get a random direction
     dir = randRange(0, 2);
+    //Check the axis
+      //Check the face
+      //Check the direction
     switch (axis) {
       case 0:
         turn = face == 0 ? "L" : "R";
@@ -149,8 +168,9 @@ function GenerateScramble (length) {
         turn += dir < 2 ? (dir == 0 ? " " : "' ") : "2 ";
         break;
     }
-    scramble += turn; //Add the turn to the scramble
-    lastAxis = axis; //Keep track of the last turn
+    //Add the turn to the scramble and keep track of the last turn
+    scramble += turn;
+    lastAxis = axis;
   }
   return scramble;
 }
