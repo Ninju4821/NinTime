@@ -15,7 +15,7 @@ let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved
 
 
 //VERSION VAR: Important to set this every update
-let version = "4.0.1";
+let version = "4.0.2";
 
 
 function Initialization() {
@@ -474,7 +474,7 @@ function getCookie(name) {
   let decodedCookie = decodeURIComponent(document.cookie); //Decoded version of the pages cookies
   let cookieArray = decodedCookie.split(';'); //Split the pages cookies into an array
   //For each cookie
-  for (let i = 0; i < ca.length; i++) {
+  for (let i = 0; i < cookieArray.length; i++) {
     //Track the current cookie in one variable
     let cookie = cookieArray[i];
     //Loop through the cookie until there are no spaces infront of it
