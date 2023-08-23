@@ -90,6 +90,8 @@ function InputDown (theKey) {
       dnf = false;
       //Update the averages and bests
       UpdateAverages();
+      //Enable the delete button
+      document.getElementById("deleteButton").disabled = false;
     }
   }
 
@@ -176,63 +178,90 @@ function GenerateScramble (length) {
 }
 
 function SetTable () {
+  //Sets the first row to say "Times"
   document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
+  //For each time (and modifier)
   for (let i = 0; i < tableTimes.length; i++) {
+    //Format the time
     const time = formatTime(tableTimes[i]);
+    //Select the proper modifier
     const modifier = timeModifiers[i] == 0 ? "" : "+";
+    //Modify the time
     let modifiedTime = timeModifiers[i] != 2 ? time + modifier : "DNF";
+    //Add the modified time to the table
     document.getElementById("timeTable").innerHTML += "<tr><td>" + modifiedTime + "</td></tr>";
   }
-  //cookie
+  //Make the cookie strings
   let timeCookieString = "";
   let modifierCookieString = "";
+  //For each time, add it to the string. Split by dashes
   tableTimes.forEach(time => timeCookieString += String(time) + "-");
   timeCookieString = timeCookieString.substring(0, timeCookieString.length-1);
+  //Set the cookie
   setCookie("times", timeCookieString, 9999);
+  //For each modifier, add it to the string. Split by dashes.
   timeModifiers.forEach(modifier => modifierCookieString += String(modifier) + "-");
   modifierCookieString = modifierCookieString.substring(0, modifierCookieString.length-1);
+  //Set the cookie
   setCookie("modifiers", modifierCookieString, 9999);
+  //Log the times, and cookies
   console.log(tableTimes);
   console.log(getCookie("times"));
   console.log(getCookie("modifiers"));
 }
 
 function UpdateAverages () {
-  let sessionMean = 0;
-  let mo3 = 0;
-  let ao5 = 0;
-  let ao12 = 0;
-  let dnfs = [false, false, false]; //mo3, ao5, ao12
-  let completeSolves = tableTimes.length;
+  let sessionMean = 0; //Mean of all completed solves
+  let mo3 = 0; //Mean of the 3 most recent solves
+  let ao5 = 0; //Average of the 5 most recent solves
+  let ao12 = 0; //Average of the 12 most recent solves
+  let dnfs = [false, false, false]; //Average dnf array; [mo3, ao5, ao12]
+  let completeSolves = tableTimes.length; //Number of completed solves
+  //If we have times in the table
   if (tableTimes.length != 0) {
-    let timeCount = 0;
+    let timeCount = 0; //Number of times used
+    //For each time and modifier
     for (let i = 0; i < tableTimes.length; i++) {
+      //If it wasn't a dnf, add it to the mean and add one to the time count.
       sessionMean += timeModifiers[i] != 2 ? tableTimes[i] : 0;
       timeCount += timeModifiers[i] != 2 ? 1 : 0;
     }
+    //Average it out
     sessionMean /= timeCount;
   }
+  //If we have at least 3 times
   if (tableTimes.length >= 3) {
+    //For each of the 3 most recent times
     for (let i = 0; i < 3; i++) {
+      //Add the time to the mo3
       mo3 += tableTimes[i];
+      //If the time was a DNF, then DNF the mo3
       if (timeModifiers[i] == 2) {
         dnfs[0] = true;
       }
     }
+    //Average it out
     mo3 /= 3;
   }
+  //If we have at least 5 times
   if (tableTimes.length >= 5) {
+    //Calculate the average 
     ao5 = calcAvg(tableTimes.slice(0, 5));
+    //If the average calculated to -1, DNF the ao5 (used to DNF the ao5 from within the calcAvg function)
     if (ao5 == -1) {
       dnfs[1] = true;
     }
   }
+  //If we have at least 12 times
   if (tableTimes.length >= 12) {
+    //Calculate the average
     ao12 = calcAvg(tableTimes.slice(0, 12));
+    //If the average calculated to -1, DNF the ao12 (used to DNF the ao12 from within the calcAvg function)
     if (ao12 == -1) {
       dnfs[2] = true;
     }
   }
+  //Update the best times
   if (tableTimes[0] < bestTimes[0]) {
     bestTimes[0] = tableTimes[0];
   }
@@ -245,8 +274,11 @@ function UpdateAverages () {
   if (ao12 < bestTimes[3] && ao12 != 0 && !dnfs[2]) {
     bestTimes[3] = ao12;
   }
+  //For each modifier, if its a DNF, subtract one from the complete solves count.
   timeModifiers.forEach(modifier => completeSolves -= modifier == 2 ? 1 : 0);
+  //Set the mean on the mean table
   document.getElementById("meanTable").innerHTML = "<tr><th>Session Mean:</th></tr><tr><td>" + formatTime(sessionMean) + " (" + String(completeSolves) + "/" + String(tableTimes.length) + ")" + "</td></tr>";
+  //Set the current and bests for the average/session table
   document.getElementById("sessionTable").innerHTML = "<tr><th></th><th>Current:</th><th>Best:</th></tr>"
   + "<tr><th>Single:</th>" 
     + "<td>" + (timeModifiers[0] != 2 ? formatTime(elapsed != 0 ? elapsed : (tableTimes[0] != null ? tableTimes[0] : 0)) : "DNF") + (timeModifiers[0] == 1 ? "+" : "") + "</td>" 
@@ -267,43 +299,57 @@ function UpdateAverages () {
     + "<td>" + (!dnfs[2] ? formatTime(ao12) : "DNF") + "</td>"
     + "<td>" + formatTime(bestTimes[3]) + "</td>"
   + "</tr>";
-  let bestTimesString = "";
+  let bestTimesString = ""; //String for the best times cookie
+  //For each time, add it to the string. Split by dashes
   bestTimes.forEach(time => bestTimesString += String(time) + "-");
   bestTimesString = bestTimesString.substring(0, bestTimesString.length-1);
+  //Set the cookie
   setCookie("bestTimes", bestTimesString, 9999);
 }
 
 function Loop () {
-
-
+  //If we are inspecting
   if (isInspecting) {
+    //Set the inspection time
     let inspectionTime = new Date() - inspectStart;
+    //If it's been less than 15 seconds
     if (inspectionTime <= 15000) {
+      //Set the timer to show the inspection time
       document.getElementById("timer").innerHTML = Math.floor(inspectionTime / 1000);
-    } else if (inspectionTime <= 17000) {
+    } else if (inspectionTime <= 17000) { //If it's between 15 and 17 seconds
+      //Set the timer to show inspection time and "(+2)"
       document.getElementById("timer").innerHTML = String(Math.floor(inspectionTime / 1000)) + " (+2)";
+      //Make the time penalty 2 seconds
       timePenalty = 2000;
-    } else {
+    } else { //If it's been longer than 17 seconds
+      //Remove the time penalty
       timePenalty = 0;
+      //Set the timer to show "DNF"
       document.getElementById("timer").innerHTML = "DNF";
+      //Set the dnf
       dnf = true;
     }
   }
 
-  //Make the timer green when ready to start
+  //Make the timer green when ready to start (held for .5 seconds)
   if (isHolding && new Date() - holdStart >= 500) {
     document.getElementById("timer").style = "text-align:center; font-size:80px; color:lime; height:10%;";
   }
   
+  //If we are timing
   if (isTiming) {
     //Get the time elapsed in total milliseconds
     elapsed = new Date() - start;
+    //Add the time penalty
     elapsed += timePenalty;
+    //Set the timer to show the formatted time
     document.getElementById("timer").innerHTML = formatTime(elapsed);
     if (timePenalty != 0) {
+      //If it's a plus 2, add a +
       document.getElementById("timer").innerHTML += "+";
     }
     if (dnf) {
+      //If it's a DNF, set it to "DNF"
       document.getElementById("timer").innerHTML += " (DNF)";
     }
   }
@@ -311,22 +357,29 @@ function Loop () {
   window.requestAnimationFrame(Loop);
 }
 
+
 //Utilities below
 
 function Delete () {
+  //Reset all times, modifiers, best times, and current averages
   tableTimes = [];
   bestTimes = [Infinity, Infinity, Infinity, Infinity];
   timeModifiers = [];
   averageTimes = [];
+  //Reset all time related cookies
   setCookie("times", "", 9999);
   setCookie("modifiers", "", 9999);
   setCookie("bestTimes", "", 9999);
+  //Update the averages (to set the average table)
   UpdateAverages();
+  //Set the time table to be empty.
   document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
-  document.getElementById("deleteButton").blur();
+  //Disable the delete button
+  document.getElementById("deleteButton").disabled = true;
 }
 
 function formatTime (time) {
+  //If the time is Infinity, return 0 seconds
   if (time == Infinity) {
     return "0:00.000";
   }
@@ -349,70 +402,91 @@ function formatTime (time) {
   let dispMinutes = hours == 0 ? String(minutes) : minutes.toString().padStart(2, '0');
   let dispSeconds = seconds.toString().padStart(2, '0');
   let dispMilliseconds = milliseconds.toString().padStart(3, '0');
+  //Return the formatted time
   return hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
 }
 
 function calcAvg (times) {
-  console.log("times are " + times);
-  let shortestTime = Infinity;
-  let shortestIndex = -1;
-  let longestTime = 0;
-  let longestIndex = -1;
-  let newTimes = [];
-  let average = 0;
-  let dnfCount = 0;
+  let shortestTime = Infinity; //Shortest time
+  let shortestIndex = -1; //Index of the shortest time
+  let longestTime = 0; //Longest time
+  let longestIndex = -1; //Index of the longest time
+  let newTimes = []; //Times after removing the longest and shortest
+  let average = 0; //Final average
+  let dnfCount = 0; //Number of DNF'd solves
+  //Loop through all times (and modifiers)
   for(let i = 0; i < times.length; i++) {
+    //If this is the shortest time so far
     if (times[i] < shortestTime) {
+      //Track the time and index
       shortestTime = times[i];
       shortestIndex = i;
     }
+    //If this is the longest time so far
     if (times[i] > longestTime) {
+      //Track the time and index
       longestTime = times[i];
       longestIndex = i;
     }
+    //If the solve was a DNF
     if (timeModifiers[i] == 2) {
+      //Add 1 to the DNF count
       dnfCount++;
+      //This is the longest time possible, no time can be longer
       longestTime = Infinity;
       longestIndex = i;
     }
   }
+  //If we have more than 1 DNF, return -1 (used to set DNFs from within CalcAvg function)
   if (dnfCount > 1) {
     return -1;
   }
+  //For each time, if it's not the shortest or longest time, add it to the new times array
   for (let i = 0; i < times.length; i++) {
     if (i != shortestIndex && i != longestIndex) {
       newTimes.push(times[i]);
     }
   }
-  console.log(newTimes);
+  //For each new time, add it to the average
   newTimes.forEach(time => average += time);
+  //Average it out
   average /= newTimes.length;
+  //Return this average
   return average;
 }
 
-function randRange(min, max) { // min and max included 
+//Generate a random number between two numbers; min and max included
+function randRange(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-function setCookie(cname, cvalue, exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+function setCookie(name, value, exdays) {
+  const exdate = new Date(); //Date of expiration
+  //Set the time to be now + expiration days
+  exdate.setTime(exdate.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString(); //Expiration time
+  //Set the cookie with name, value, and expiration date provided
+  document.cookie = name + "=" + value + ";" + expires + ";path=/";
 }
 
-function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
+function getCookie(name) {
+  let cname = name + "="; //Add an "=" to the inputted name
+  let decodedCookie = decodeURIComponent(document.cookie); //Decoded version of the pages cookies
+  let cookieArray = decodedCookie.split(';'); //Split the pages cookies into an array
+  //For each cookie
   for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
+    //Track the current cookie in one variable
+    let cookie = cookieArray[i];
+    //Loop through the cookie until there are no spaces infront of it
+    while (cookie.charAt(0) == ' ') {
+      cookie = cookie.substring(1);
     }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
+    //If this cookie is the one we want
+    if (cookie.indexOf(cname) == 0) {
+      //Return the cookies value
+      return cookie.substring(cname.length, c.length);
     }
   }
+  //If it wasn't found, return an empty string
   return "";
 }
