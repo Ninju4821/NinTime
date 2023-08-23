@@ -15,7 +15,7 @@ let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved
 
 
 //VERSION VAR: Important to set this every update
-let version = "4.0.2";
+let version = "4.0.3";
 
 
 function Initialization() {
@@ -464,7 +464,7 @@ function setCookie(name, value, exdays) {
   const exdate = new Date(); //Date of expiration
   //Set the time to be now + expiration days
   exdate.setTime(exdate.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString(); //Expiration time
+  let expires = "expires="+ exdate.toUTCString(); //Expiration time
   //Set the cookie with name, value, and expiration date provided
   document.cookie = name + "=" + value + ";" + expires + ";path=/";
 }
@@ -484,7 +484,7 @@ function getCookie(name) {
     //If this cookie is the one we want
     if (cookie.indexOf(cname) == 0) {
       //Return the cookies value
-      return cookie.substring(cname.length, c.length);
+      return cookie.substring(cname.length, cookie.length);
     }
   }
   //If it wasn't found, return an empty string
