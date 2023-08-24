@@ -38,9 +38,9 @@ function Initialization() {
       setCookie("times", "", 1);
       setCookie("modifiers", "", 1);
       let solveCookieList = "";
-      solves.forEach(solve => {
-        solveCookieList += "(" + solve.time + "," + solve.modifier + "," + solve.scramble + ")";
-      });
+      solves.forEach(solve => solveCookieList += encodeSolveString(solve) + "-");
+      solveCookieList.substring(0, solveCookieList.length-1);
+      setCookie("solves", solveCookieList, 9999);
     }
   }
   document.getElementById("version").innerHTML = "Version=" + version;
@@ -62,7 +62,6 @@ function Initialization() {
   if (cookieSolveString != "") {
     let cookieSolveArray = cookieSolveString.split('-');
     cookieSolveArray.forEach(string => solves.push(decodeSolveString(string)));
-    SetTable();
   }
   //If we have best times,  add them to the list
   if (cookieBestList != "") {
@@ -71,6 +70,7 @@ function Initialization() {
       bestTimes[i] = cookieBestListArray[i];
     }
   }
+  SetTable();
   //Update all the averages and their table
   UpdateAverages();
 }
@@ -209,7 +209,7 @@ function SetTable () {
   //Make the cookie strings
   let solveCookieString = "";
   //For each solve, add it to the string. Split by dashes
-  solves.forEach(solve => solveCookieString += String(solve.time) + "-");
+  solves.forEach(solve => solveCookieString += encodeSolveString(solve) + "-");
   solveCookieString = solveCookieString.substring(0, solveCookieString.length-1);
   //Set the cookie
   setCookie("solves", solveCookieString, 9999);
@@ -432,6 +432,10 @@ function formatTime (time) {
   let dispMilliseconds = milliseconds.toString().padStart(3, '0');
   //Return the formatted time
   return hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
+}
+
+function encodeSolveString (solve) {
+  return "(" + String(solve.time) + "," + String(solve.modifier) + "," + solve.scramble + ")";
 }
 
 function decodeSolveString (solveString) { //Solve string format (pre-encryption) : (time,modifier,scramble)
