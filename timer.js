@@ -38,7 +38,10 @@ function Initialization() {
       setCookie("times", "", 1);
       setCookie("modifiers", "", 1);
       let solveCookieList = "";
-      solves.forEach(solve => {solveCookieList += encodeSolveString(solve) + "-"; console.log(encodeSolveString(solve))});
+      solves.forEach(solve => {
+        solveCookieList += encodeSolveString(solve) + "-"; 
+        console.log(encodeSolveString(solve))
+      });
       SetTable();
     }
   }
