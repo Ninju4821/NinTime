@@ -8,8 +8,7 @@ let timeStart = null; //What time did timing start?
 let timePenalty = 0; //What is our current time penalty (in ____)
 let dnf = false; //Is this solve a DNF?
 let elapsed = 0; //How long has passed since timeStart?
-//- TODO: Add a solve class that contains the time, modifier, and scramble of a given solve, that replaces tableTimes and timeModifiers
-let solves = []; //WIP: Lists all solves
+let solves = []; //Lists all solves
 let averageTimes = []; //Lists the current averages; [session mean, mo3, ao5, ao12]
 let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved times/averages; [single, mo3, ao5, ao12]
 
@@ -27,16 +26,22 @@ function Initialization() {
   if (version != lastVersion && lastVersion != "") {
     //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
     console.log("version changed");
-    //- TODO: Convert old cookies to solve array when going to version 5.0.0
-    //- TODO: Make an earlierVersionThan function
-    if (isEarlierVersion("5.0.0")) {
+    //- TODO: Fix conversion to actually work and clear old cookies
+    if (isEarlierVersion(lastVersion)) {
       let cookieTimeList = getCookie("times");
       let cookieModifierList = getCookie("modifiers");
       let cookieTimeListArray = cookieTimeList.split("-");
       let cookieModifierListArray = cookieModifierList.split("-");
       for (let i = 0; i < cookieTimeListArray.length; i++) {
-        solves.push(new Solve(cookieTimeListArray[i], cookieModifierListArray[i], "Unknown (pre-5.0.0)"));
+        solves.push(new Solve(cookieTimeListArray[i], cookieModifierListArray[i], "Unknown (pre v5.0.0)"));
       }
+      setCookie("times", "", 1);
+      setCookie("modifiers", "", 1);
+      let solveCookieList = "";
+      solves.forEach(solve => {
+        solveCookieList += encodeSolveString(solve) + "-"; 
+        console.log(encodeSolveString(solve))
+      });
     }
   }
   document.getElementById("version").innerHTML = "Version=" + version;
@@ -49,7 +54,7 @@ function Initialization() {
   //Start the loop
   window.requestAnimationFrame(Loop);
   //Generate the first scramble
-  document.getElementById("scramble").innerHTML = GenerateScramble(25);
+  document.getElementById("scramble").innerHTML = GenerateScramble(randRange(15,20));
   //Grab the time lists from the cookies
   //TODO: Encrypt/Decrypt cookies to prevent modification
   let cookieSolveString = getCookie("solves");
@@ -57,9 +62,7 @@ function Initialization() {
   //If we have times add them to the lists and set the table
   if (cookieSolveString != "") {
     let cookieSolveArray = cookieSolveString.split('-');
-    //- TODO: Make decodeSolveString function
     cookieSolveArray.forEach(string => solves.push(decodeSolveString(string)));
-    SetTable();
   }
   //If we have best times,  add them to the list
   if (cookieBestList != "") {
@@ -68,6 +71,7 @@ function Initialization() {
       bestTimes[i] = cookieBestListArray[i];
     }
   }
+  SetTable();
   //Update all the averages and their table
   UpdateAverages();
 }
@@ -88,10 +92,9 @@ function InputDown (theKey) {
       canInspect = false;
       //Stop timing
       isTiming = false;
-      //- WIP: Add the solve to the array
       solves.unshift(new Solve(elapsed, dnf ? 2 : (timePenalty != 0 ? 1 : 0), document.getElementById("scramble").innerHTML));
       //Generate a new scramble
-      document.getElementById("scramble").innerHTML = GenerateScramble(25);
+      document.getElementById("scramble").innerHTML = GenerateScramble(randRange(15,20));
       //Set the table
       SetTable();
       //Reset the penalties
@@ -142,7 +145,6 @@ function InputUp (theKey) {
   }
 }
 
-//- TODO: Generate random face (must be different), then random direction (including 2 moves) to add to the scramble
 function GenerateScramble (length) {
   let scramble = ""; //Scramble string
   let face = 0; //Current face
@@ -208,7 +210,7 @@ function SetTable () {
   //Make the cookie strings
   let solveCookieString = "";
   //For each solve, add it to the string. Split by dashes
-  solves.forEach(solve => solveCookieString += String(solve.time) + "-");
+  solves.forEach(solve => solveCookieString += encodeSolveString(solve) + "-");
   solveCookieString = solveCookieString.substring(0, solveCookieString.length-1);
   //Set the cookie
   setCookie("solves", solveCookieString, 9999);
@@ -431,6 +433,10 @@ function formatTime (time) {
   let dispMilliseconds = milliseconds.toString().padStart(3, '0');
   //Return the formatted time
   return hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
+}
+
+function encodeSolveString (solve) {
+  return "(" + String(solve.time) + "," + String(solve.modifier) + "," + solve.scramble + ")";
 }
 
 function decodeSolveString (solveString) { //Solve string format (pre-encryption) : (time,modifier,scramble)
