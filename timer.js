@@ -27,7 +27,7 @@ function Initialization() {
     //VERSION CONVERSION CODE: Use for when a major change occurs that will need to be converted between versions.
     console.log("version changed");
     //TODO: Fix conversion to actually work and clear old cookies
-    if (isEarlierVersion("5.0.0")) {
+    if (isEarlierVersion(lastVersion)) {
       let cookieTimeList = getCookie("times");
       let cookieModifierList = getCookie("modifiers");
       let cookieTimeListArray = cookieTimeList.split("-");
