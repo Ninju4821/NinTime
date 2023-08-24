@@ -21,10 +21,23 @@
       right: 25;
       width: 5%;
     }
+    #solveDetails {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      width: 50%;
+      height: 50%;
+      transform: translate(-50%, -50%);
+      overflow: auto;
+      background-color: lightgrey;
+      text-align: center;
+    }
   </style>
   <head>
     <script src="timer.js"></script>
-    <title>NinTime - Ninju's Hub</title>
+    <title>NinTime</title>
   </head>
   <body onload="Initialization()">
     <h1 id="scramble" style="text-align:center;  font-size:40px; color:black; height:10%;">U R F L B D U' R' F' L' B' D'</h1>
@@ -35,7 +48,13 @@
       <br>
       <table id="timeTable"><tr><th>Times</th></tr></table>
     </div>
-    <button onclick="Delete()" id="deleteButton">Delete</button>
+    <button onclick="Delete()" id="deleteButton" disabled=true>Delete</button>
+    <div id="solveDetails">
+      <h2>Solve Details</h2>
+      <h1 id="detailsTime" style="font-weight: normal;">0:00.000</h3>
+      <p id="detailsScramble">U R F L B D U' R' F' L' B' D'</p>
+      <button onclick="CloseSolveDetails()">Close</button>
+    </div>
     <p id="version">Version=???</p>
   </body>
 </html>
