@@ -33,7 +33,7 @@ function Initialization() {
       let cookieTimeListArray = cookieTimeList.split("-");
       let cookieModifierListArray = cookieModifierList.split("-");
       for (let i = 0; i < cookieTimeListArray.length; i++) {
-        solves.push(new Solve(cookieTimeListArray[i], cookieModifierListArray[i], "Unknown (pre-5.0.0)"));
+        solves.push(new Solve(cookieTimeListArray[i], cookieModifierListArray[i], "Unknown (pre v5.0.0)"));
       }
       setCookie("times", "", 1);
       setCookie("modifiers", "", 1);
