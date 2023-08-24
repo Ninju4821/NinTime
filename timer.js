@@ -39,8 +39,7 @@ function Initialization() {
       setCookie("modifiers", "", 1);
       let solveCookieList = "";
       solves.forEach(solve => {solveCookieList += encodeSolveString(solve) + "-"; console.log(encodeSolveString(solve))});
-      solveCookieList.substring(0, solveCookieList.length-1);
-      setCookie("solves", solveCookieList, 9999);
+      SetTable();
     }
   }
   document.getElementById("version").innerHTML = "Version=" + version;
@@ -70,7 +69,6 @@ function Initialization() {
       bestTimes[i] = cookieBestListArray[i];
     }
   }
-  SetTable();
   //Update all the averages and their table
   UpdateAverages();
 }
