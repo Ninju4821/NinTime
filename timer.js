@@ -54,7 +54,7 @@ function Initialization() {
   //Start the loop
   window.requestAnimationFrame(Loop);
   //Generate the first scramble
-  document.getElementById("scramble").innerHTML = GenerateScramble(25);
+  document.getElementById("scramble").innerHTML = GenerateScramble(randRange(15,20));
   //Grab the time lists from the cookies
   //TODO: Encrypt/Decrypt cookies to prevent modification
   let cookieSolveString = getCookie("solves");
@@ -94,7 +94,7 @@ function InputDown (theKey) {
       isTiming = false;
       solves.unshift(new Solve(elapsed, dnf ? 2 : (timePenalty != 0 ? 1 : 0), document.getElementById("scramble").innerHTML));
       //Generate a new scramble
-      document.getElementById("scramble").innerHTML = GenerateScramble(25);
+      document.getElementById("scramble").innerHTML = GenerateScramble(randRange(15,20));
       //Set the table
       SetTable();
       //Reset the penalties
