@@ -1,20 +1,20 @@
 let canInspect = true; //Can we start inspecting?
 let isInspecting = false; //Are we inspecting?
-let isHolding = false; //Are we holding during inspection?
-let isTiming = false; //Are we timing?
 let inspectStart = null; //What time did inspection start?
+let isHolding = false; //Are we holding during inspection?
 let holdStart = null; //What time did we start holding?
+let isTiming = false; //Are we timing?
 let timeStart = null; //What time did timing start?
-let timePenalty = 0; //What is our current time penalty (in ____)
-let dnf = false; //Is this solve a DNF?
 let elapsed = 0; //How long has passed since timeStart?
+let timePenalty = 0; //What is our current time penalty (in milliseconds)
+let dnf = false; //Is this solve a DNF?
 let solves = []; //Lists all solves
 let averageTimes = []; //Lists the current averages; [session mean, mo3, ao5, ao12]
 let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved times/averages; [single, mo3, ao5, ao12]
 
 
 //VERSION VAR: Important to set this every update
-let version = "5.0.0";
+let version = "5.1.0";
 
 
 function Initialization() {
@@ -191,7 +191,7 @@ function GenerateScramble (length) {
 
 function SetTable () {
   //Sets the first row to say "Times"
-  document.getElementById("timeTable").innerHTML = "<tr><th></th><th>Times</th></tr>";
+  document.getElementById("timeTable").innerHTML = "<tr><th style=\"width:15%;\">#</th><th>Times</th></tr>";
   //For each solve
   for (let i = 0; i < solves.length; i++) {
     //Format the time
@@ -202,7 +202,7 @@ function SetTable () {
     let modifiedTime = solves[i].modifier != 2 ? time + modifier : "DNF";
     //Add the modified time to the table
     document.getElementById("timeTable").innerHTML += "<tr>"
-      + "<td><button onclick=\"SolveButton(" + String(i) + ")\">" + String(solves.length - i) + "</button></td>"
+      + "<td class=\"timeTableCell\"><button onclick=\"SolveButton(" + String(i) + ")\" class=\"timeButton\">" + String(solves.length - i) + "</button></td>"
       + "<td>" + modifiedTime + "</td>"
     + "</tr>";
   }
@@ -217,7 +217,7 @@ function SetTable () {
   console.log(solves);
   console.log("Cookie is " + getCookie("solves"));
   //Enable the delete button
-  document.getElementById("deleteButton").disabled = false;
+  document.getElementById("deleteButton").disabled = solves != 0 ? false : true;
 }
 
 function UpdateAverages () {
@@ -372,6 +372,8 @@ function Loop () {
 
 //Utilities below
 
+let displayedSolveIndex = 0; //Tracks the displayed solve index across utils
+
 class Solve {
   constructor (time, modifier, scramble) {
     this.time = time;
@@ -382,28 +384,61 @@ class Solve {
 
 function SolveButton (index) {
   let solve = solves[index];
+  let timeDisplayString = "";
   document.getElementById("solveDetails").style.display = "block";
-  document.getElementById("detailsTime").innerHTML = formatTime(solve.time) + (solve.modifier != 2 ? (solve.modifier == 0 ? "" : "+") : "DNF");
+  switch (solve.modifier) {
+    case 0:
+      timeDisplayString = formatTime(solve.time);
+      break;
+    case 1:
+      timeDisplayString = formatTime(solve.time) + "+";
+      break;
+    case 2:
+      timeDisplayString = "DNF (" + formatTime(solve.time) + ")";
+      break;
+  }
+  document.getElementById("detailsTime").innerHTML = timeDisplayString;
   document.getElementById("detailsScramble").innerHTML = solve.scramble;
+  displayedSolveIndex = index;
 }
 
 function CloseSolveDetails () {
   document.getElementById("solveDetails").style.display = "none";
 }
 
-function Delete () {
-  //Reset all times, modifiers, best times, and current averages
-  solves = [];
-  averageTimes = [];
+function ToggleCopyWindow () {
+  let currentDisplay = document.getElementById("copyWindow").style.display;
+  currentDisplay = currentDisplay != "" ? currentDisplay : "none";
+  document.getElementById("copyWindow").style.display = currentDisplay == "none" ? "block" : "none";
+  document.getElementById("copyDetails").innerHTML = "Single: " + formatSolve(solves[displayedSolveIndex]) + "<br>"
+  + "<br>"
+  + "Time List:" + "<br>"
+  + "1) " + formatSolve(solves[displayedSolveIndex]) + "&nbsp;&nbsp;&nbsp;" + solves[displayedSolveIndex].scramble;
+}
+
+function RemodifySolve (newModifier) {
+  solves[displayedSolveIndex].time += newModifier == 1 ? (solves[displayedSolveIndex].modifier != 1 ? 2000 : 0) : (solves[displayedSolveIndex].modifier == 1 ? -2000 : 0);
+  solves[displayedSolveIndex].modifier = newModifier;
+  SetTable();
+  UpdateAverages();
+  SolveButton (displayedSolveIndex);
+}
+
+function Delete (startingIndex, numberToDelete) {
+  //Delete the times within the range provided
+  solves.splice(startingIndex, numberToDelete);
+  //Resets the best times to ensure that we don't leave a deleted time
+  bestTimes = [Infinity, Infinity, Infinity, Infinity];
   //Reset all time related cookies
   setCookie("solves", "", 9999);
   setCookie("bestTimes", "", 9999);
-  //Update the averages (to set the average table)
+  //Set both tables (also sets the cookies)
+  SetTable();
   UpdateAverages();
-  //Set the time table to be empty.
-  document.getElementById("timeTable").innerHTML = "<tr><th>Times</th></tr>";
-  //Disable the delete button
-  document.getElementById("deleteButton").disabled = true;
+  //Close the solve details if they were open
+  CloseSolveDetails();
+  //Disable the delete button if solves is empty now.
+  document.getElementById("deleteButton").disabled = solves.length == 0 ? true : false;
 }
 
 function formatTime (time) {
@@ -432,6 +467,11 @@ function formatTime (time) {
   let dispMilliseconds = milliseconds.toString().padStart(3, '0');
   //Return the formatted time
   return hours == 0 ? dispMinutes + ":" + dispSeconds + "." + dispMilliseconds : dispHours + ":" + dispMinutes + ":" + dispSeconds + "." + dispMilliseconds;
+}
+
+function formatSolve (solve, space = false) {
+  let formattedTime = formatTime(solve.time);
+  return solve.modifier != 2 ? (formattedTime + (solve.modifier == 0 ? "" : "+") + (space ? " " : "")) : "DNF (" + formattedTime + ")";
 }
 
 function encodeSolveString (solve) {
