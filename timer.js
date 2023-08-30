@@ -9,7 +9,6 @@ let elapsed = 0; //How long has passed since timeStart?
 let timePenalty = 0; //What is our current time penalty (in milliseconds)
 let dnf = false; //Is this solve a DNF?
 let solves = []; //Lists all solves
-let averageTimes = []; //Lists the current averages; [session mean, mo3, ao5, ao12]
 let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved times/averages; [single, mo3, ao5, ao12]
 
 
@@ -190,8 +189,8 @@ function GenerateScramble (length) {
 }
 
 function SetTable () {
-  //Sets the first row to say "Times"
-  document.getElementById("timeTable").innerHTML = "<tr><th style=\"width:15%;\">#</th><th>Times</th></tr>";
+  //Sets the first row to say "#|Times|mo3|ao5"
+  document.getElementById("timeTable").innerHTML = "<tr><th style=\"width:10%;\">#</th><th>Times</th><th>mo3</th><th>ao5</th></tr>";
   //For each solve
   for (let i = 0; i < solves.length; i++) {
     //Format the time
@@ -204,6 +203,8 @@ function SetTable () {
     document.getElementById("timeTable").innerHTML += "<tr>"
       + "<td class=\"timeTableCell\"><button onclick=\"SolveButton(" + String(i) + ")\" class=\"timeButton\">" + String(solves.length - i) + "</button></td>"
       + "<td>" + modifiedTime + "</td>"
+      + "<td>" + "<button class=\"mo3Button\" onclick=\"ToggleCopyWindow(" + String(i) + ", 3)\">" + (solves.length - i >= 3 ? formatTime(calcMean(solves.slice(i, i + 2))) : "--") + "</button>" + "</td>"
+      + "<td><button onclick=\"ToggleCopyWindow(" + String(i) + ", 5)\" class=\"ao5Button\">" + (solves.length - i >= 5 ? formatTime(calcAvg(solves.slice(i, i + 4))) : "--") + "</button></td>"
     + "</tr>";
   }
   //Make the cookie strings
@@ -224,8 +225,7 @@ function UpdateAverages () {
   let sessionMean = 0; //Mean of all completed solves
   let mo3 = 0; //Mean of the 3 most recent solves
   let ao5 = 0; //Average of the 5 most recent solves
-  let ao12 = 0; //Average of the 12 most recent solves
-  let dnfs = [false, false, false]; //Average dnf array; [mo3, ao5, ao12]
+  let ao12 = 0; //Average of the 12 most recent solves\
   let completeSolves = solves.length; //Number of completed solves
   //If we have solves
   if (solves.length != 0) {
@@ -241,35 +241,17 @@ function UpdateAverages () {
   }
   //If we have at least 3 solves
   if (solves.length >= 3) {
-    //For each of the 3 most recent solves
-    for (let i = 0; i < 3; i++) {
-      //Add the time to the mo3
-      mo3 += solves[i].time;
-      //If the time was a DNF, then DNF the mo3
-      if (solves[i].modifier == 2) {
-        dnfs[0] = true;
-      }
-    }
-    //Average it out
-    mo3 /= 3;
+    mo3 = calcMean(solves.slice(0, 2));
   }
   //If we have at least 5 times
   if (solves.length >= 5) {
     //Calculate the average 
-    ao5 = calcAvg(solves.slice(0, 5));
-    //If the average calculated to -1, DNF the ao5 (used to DNF the ao5 from within the calcAvg function)
-    if (ao5 == -1) {
-      dnfs[1] = true;
-    }
+    ao5 = calcAvg(solves.slice(0, 4));
   }
   //If we have at least 12 times
   if (solves.length >= 12) {
     //Calculate the average
     ao12 = calcAvg(solves.slice(0, 12));
-    //If the average calculated to -1, DNF the ao12 (used to DNF the ao12 from within the calcAvg function)
-    if (ao12 == -1) {
-      dnfs[2] = true;
-    }
   }
   //Update the best times
   if (solves[0] != null) {
@@ -277,13 +259,13 @@ function UpdateAverages () {
       bestTimes[0] = solves[0].time;
     }
   }
-  if (mo3 < bestTimes[1] && mo3 != 0 && !dnfs[0]) {
+  if (mo3 < bestTimes[1] && mo3 > 0) {
     bestTimes[1] = mo3;
   }
-  if (ao5 < bestTimes[2] && ao5 != 0 && !dnfs[1]) {
+  if (ao5 < bestTimes[2] && ao5 > 0) {
     bestTimes[2] = ao5;
   }
-  if (ao12 < bestTimes[3] && ao12 != 0 && !dnfs[2]) {
+  if (ao12 < bestTimes[3] && ao12 > 0) {
     bestTimes[3] = ao12;
   }
   //For each modifier, if its a DNF, subtract one from the complete solves count.
@@ -298,17 +280,17 @@ function UpdateAverages () {
   + "</tr>"
   + "<tr>"
     + "<th>mo3:</th>"
-    + "<td>" + (!dnfs[0] ? formatTime(mo3) : "DNF") + "</td>"
+    + "<td>" + formatTime(mo3) + "</td>"
     + "<td>" + formatTime(bestTimes[1]) + "</td>"
   + "</tr>"
   + "<tr>"
     + "<th>ao5:</th>"
-    + "<td>" + (!dnfs[1] ? formatTime(ao5) : "DNF") + "</td>"
+    + "<td>" + formatTime(ao5) + "</td>"
     + "<td>" + formatTime(bestTimes[2]) + "</td>"
   + "</tr>"
   + "<tr>"
     + "<th>ao12:</th>"
-    + "<td>" + (!dnfs[2] ? formatTime(ao12) : "DNF") + "</td>"
+    + "<td>" + formatTime(ao12) + "</td>"
     + "<td>" + formatTime(bestTimes[3]) + "</td>"
   + "</tr>";
   let bestTimesString = ""; //String for the best times cookie
@@ -406,14 +388,36 @@ function CloseSolveDetails () {
   document.getElementById("solveDetails").style.display = "none";
 }
 
-function ToggleCopyWindow () {
+function ToggleCopyWindow (solveIndex = displayedSolveIndex, numberOfSolves = 1) {
   let currentDisplay = document.getElementById("copyWindow").style.display;
   currentDisplay = currentDisplay != "" ? currentDisplay : "none";
   document.getElementById("copyWindow").style.display = currentDisplay == "none" ? "block" : "none";
-  document.getElementById("copyDetails").innerHTML = "Single: " + formatSolve(solves[displayedSolveIndex]) + "<br>"
-  + "<br>"
-  + "Time List:" + "<br>"
-  + "1) " + formatSolve(solves[displayedSolveIndex]) + "&nbsp;&nbsp;&nbsp;" + solves[displayedSolveIndex].scramble;
+  switch (numberOfSolves) {
+    case 1:
+      document.getElementById("copyDetails").innerHTML = "Single: " + formatTime(solves[solveIndex].time);
+      break;
+    case 3:
+      if (solves.length >= 3) {
+        document.getElementById("copyDetails").innerHTML = "mo3: " + formatTime(calcMean(solves.slice(solveIndex, solveIndex + 2)));
+      } else {
+        document.getElementById("copyWindow").style.display = "none";
+      }
+      break;
+    case 5:
+      if (solves.length >= 5) {
+        document.getElementById("copyDetails").innerHTML = "ao5: " + formatTime(calcMean(solves.slice(solveIndex, solveIndex + 4)));
+      } else {
+        document.getElementById("copyWindow").style.display = "none";
+      }
+      break;
+  }
+  document.getElementById("copyDetails").innerHTML += "<br><br>Time List:<br>";
+  let timeListTimes = [];
+  for (let i = 0; i < numberOfSolves; i++) {
+    //TODO: If it's an ao5, include parenthesis around the best and worst solve to show their removal
+    timeListTimes.push(String(numberOfSolves - i) + ") " + formatSolve(solves[solveIndex + i]) + "&nbsp;&nbsp;&nbsp;" + solves[solveIndex + i].scramble + "<br>");
+  }
+  timeListTimes.forEach(string => document.getElementById("copyDetails").innerHTML += string);
 }
 
 function RemodifySolve (newModifier) {
@@ -445,6 +449,9 @@ function formatTime (time) {
   //If the time is Infinity, return 0 seconds
   if (time == Infinity) {
     return "0:00.000";
+  }
+  if (time == -1) {
+    return "DNF";
   }
   //Find the seconds of those milliseconds
   let seconds = Math.floor(time / 1000);
@@ -505,6 +512,19 @@ function isEarlierVersion (inputVersion) {
     return true;
   }
   return false;
+}
+
+function calcMean (meanSolves) {
+  let mean = 0;
+  let dnf = false;
+  meanSolves.forEach(solve => {
+    if (solve.modifier == 2) {
+      dnf = true;
+    }
+    mean += solve.time;
+  });
+  mean /= meanSolves.length;
+  return !dnf ? mean : -1;
 }
 
 function calcAvg (avgSolves) {
