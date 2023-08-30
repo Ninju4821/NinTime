@@ -7,10 +7,11 @@
     table {
       width: 100%;
     }
-    td {
+    th, td {
       text-align: center;
+      width: 30%;
     }
-    div {
+    div.tablesDiv {
       width: 20%;
       height: 50%;
       overflow: auto;
@@ -33,6 +34,62 @@
       overflow: auto;
       background-color: lightgrey;
       text-align: center;
+      box-shadow: 0px 0px 8px 1px rgba(0,0,0,.6);
+    }
+    #copyWindow {
+      display: none;
+      position: fixed;
+      z-index: 2;
+      width: 40%;
+      height: 40%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      overflow: auto;
+      background-color: white;
+      box-shadow: 0px 0px 8px 1px rgba(0,0,0,.6);
+      text-align: center;
+    }
+    button {
+      cursor: pointer;
+    }
+    .modifierButton {
+      display: inline;
+    }
+    .timeTableCell {
+      width: 15%;
+    }
+    .timeButton {
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      border: transparent;
+      font-weight: bolder;
+    }
+    .timeButton:hover {
+      background-color: rgb(230, 230, 230);
+      color: rgb(0, 0, 255);
+    }
+    .mo3Button, .ao5Button {
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      border: transparent;
+      font: inherit;
+    }
+    .mo3Button:hover, .ao5Button:hover {
+      background-color: rgb(230, 230, 230);
+    }
+    #copyDetails {
+      border-color: black;
+      border-width: 1px;
+      border-style: solid;
+      background-color: lightgrey;
+      height: 70%;
+      margin: 5%;
+      padding: 0% 2%;
+      text-align: left;
+      overflow: auto;
     }
   </style>
   <head>
@@ -42,18 +99,31 @@
   <body onload="Initialization()">
     <h1 id="scramble" style="text-align:center;  font-size:40px; color:black; height:10%;">U R F L B D U' R' F' L' B' D'</h1>
     <p id="timer" style="text-align:center; font-size:80px; color:black; height:10%;">0:00.000</p>
-    <div>
+    <div class="tablesDiv">
       <table id="meanTable"><tr><th>Session Mean:</th></tr><tr><td>0:00.000</td></tr></table>
       <table id="sessionTable"><tr><th></th><th>Current:</th><th>Best:</th></tr><tr><th>Single:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>mo3:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao5:</th><td>0:00.000</td><td>0:00.000</td></tr><tr><th>ao12:</th><td>0:00.000</td><td>0:00.000</td></tr></table>
       <br>
       <table id="timeTable"><tr><th>Times</th></tr></table>
     </div>
-    <button onclick="Delete()" id="deleteButton" disabled=true>Delete</button>
+    <button onclick="Delete(0, solves.length)" id="deleteButton" disabled=true>Delete All</button>
     <div id="solveDetails">
       <h2>Solve Details</h2>
       <h1 id="detailsTime" style="font-weight: normal;">0:00.000</h3>
       <p id="detailsScramble">U R F L B D U' R' F' L' B' D'</p>
+      <div>
+        <button class="modifierButton" onclick="RemodifySolve(0)">OK</button>
+        <button class="modifierButton" onclick="RemodifySolve(1)">+2</button>
+        <button class="modifierButton" onclick="RemodifySolve(2)">DNF</button>
+        <button class="modifierButton" onclick="Delete(displayedSolveIndex, prompt('How many solves would you like to delete (going down) from the current index?', 1))">X</button>
+      </div>
+      <br><br>
+      <button onclick="ToggleCopyWindow()">Copy 📋</button>
+      <br><br>
       <button onclick="CloseSolveDetails()">Close</button>
+    </div>
+    <div id="copyWindow">
+      <p id="copyDetails">Copy Details</p>
+      <button onclick="ToggleCopyWindow()">Done</button>
     </div>
     <p id="version">Version=???</p>
   </body>
