@@ -13,7 +13,7 @@ let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved
 
 
 //VERSION VAR: Important to set this every update
-let version = "5.1.0";
+let version = "5.1.1";
 
 
 function Initialization() {
@@ -143,18 +143,21 @@ function InputUp (theKey) {
   }
 }
 
+//- TODO: Don't allow 3 moves on the same axis in order.  Moves like F2 B [R] F'
 function GenerateScramble (length) {
   let scramble = ""; //Scramble string
   let face = 0; //Current face
   let lastFace = 6;
   let dir = 0; //Current direction
   let turn = ""; //Current turn string
+  let sameAxisTurns = 0;
+  let sameAxis = 3;
   //Loop for the length of the scramble
   for (let i = 0; i < length; i++) {
     //Get a new axis
     do {
       face = randRange(0, 5);
-    } while (face == lastFace)
+    } while (face == lastFace || (sameAxisTurns >= 2 && getAxis(face) == sameAxis))
     //Get a random direction
     dir = randRange(0, 2);
     //Check the face
@@ -162,21 +165,57 @@ function GenerateScramble (length) {
     switch (face) {
       case 0:
         turn = "U";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
       case 1:
         turn = "R";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
       case 2:
         turn = "F";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
       case 3:
         turn = "L";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
       case 4:
         turn = "B";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
       case 5:
         turn = "D";
+        if (sameAxis == getAxis(face)) {
+          sameAxisTurns++;
+        } else {
+          sameAxisTurns = 0;
+          sameAxis = getAxis(face);
+        }
         break;
     }
     turn += dir != 2 ? (dir == 0 ? " " : "' ") : "2 ";
@@ -186,6 +225,19 @@ function GenerateScramble (length) {
   }
   scramble.substring(0, scramble.length-1);
   return scramble;
+}
+
+//UTIL getAxis
+function getAxis (face) {
+  if (face == 0 || face == 5) {
+    return 0;
+  } else if (face == 1 || face == 3) {
+    return 1;
+  } else if (face == 2 || face == 4) {
+    return 2;
+  } else {
+    return 3;
+  }
 }
 
 function SetTable () {
@@ -203,8 +255,8 @@ function SetTable () {
     document.getElementById("timeTable").innerHTML += "<tr>"
       + "<td class=\"timeTableCell\"><button onclick=\"SolveButton(" + String(i) + ")\" class=\"timeButton\">" + String(solves.length - i) + "</button></td>"
       + "<td>" + modifiedTime + "</td>"
-      + "<td>" + "<button class=\"mo3Button\" onclick=\"ToggleCopyWindow(" + String(i) + ", 3)\">" + (solves.length - i >= 3 ? formatTime(calcMean(solves.slice(i, i + 2))) : "--") + "</button>" + "</td>"
-      + "<td><button onclick=\"ToggleCopyWindow(" + String(i) + ", 5)\" class=\"ao5Button\">" + (solves.length - i >= 5 ? formatTime(calcAvg(solves.slice(i, i + 4))) : "--") + "</button></td>"
+      + "<td>" + "<button class=\"mo3Button\" onclick=\"ToggleCopyWindow(" + String(i) + ", 3)\">" + (solves.length - i >= 3 ? formatTime(calcMean(solves.slice(i, i + 3))) : "--") + "</button>" + "</td>"
+      + "<td><button onclick=\"ToggleCopyWindow(" + String(i) + ", 5)\" class=\"ao5Button\">" + (solves.length - i >= 5 ? formatTime(calcAvg(solves.slice(i, i + 5))) : "--") + "</button></td>"
     + "</tr>";
   }
   //Make the cookie strings
@@ -241,12 +293,12 @@ function UpdateAverages () {
   }
   //If we have at least 3 solves
   if (solves.length >= 3) {
-    mo3 = calcMean(solves.slice(0, 2));
+    mo3 = calcMean(solves.slice(0, 3));
   }
   //If we have at least 5 times
   if (solves.length >= 5) {
     //Calculate the average 
-    ao5 = calcAvg(solves.slice(0, 4));
+    ao5 = calcAvg(solves.slice(0, 5));
   }
   //If we have at least 12 times
   if (solves.length >= 12) {
@@ -398,14 +450,14 @@ function ToggleCopyWindow (solveIndex = displayedSolveIndex, numberOfSolves = 1)
       break;
     case 3:
       if (solves.length >= 3) {
-        document.getElementById("copyDetails").innerHTML = "mo3: " + formatTime(calcMean(solves.slice(solveIndex, solveIndex + 2)));
+        document.getElementById("copyDetails").innerHTML = "mo3: " + formatTime(calcMean(solves.slice(solveIndex, solveIndex + 3)));
       } else {
         document.getElementById("copyWindow").style.display = "none";
       }
       break;
     case 5:
       if (solves.length >= 5) {
-        document.getElementById("copyDetails").innerHTML = "ao5: " + formatTime(calcMean(solves.slice(solveIndex, solveIndex + 4)));
+        document.getElementById("copyDetails").innerHTML = "ao5: " + formatTime(calcAvg(solves.slice(solveIndex, solveIndex + 5)));
       } else {
         document.getElementById("copyWindow").style.display = "none";
       }
@@ -535,6 +587,7 @@ function calcAvg (avgSolves) {
   let avgTimes = []; //Times after removing the longest and shortest
   let average = 0; //Final average
   let dnfCount = 0; //Number of DNF'd solves
+  console.log(avgSolves);
   //Loop through all times (and modifiers)
   for(let i = 0; i < avgSolves.length; i++) {
     //If this is the shortest time so far
@@ -557,7 +610,10 @@ function calcAvg (avgSolves) {
       longestTime = Infinity;
       longestIndex = i;
     }
+    console.log(avgSolves[i]);
   }
+  console.log(avgSolves[longestIndex]);
+  console.log(avgSolves[shortestIndex]);
   //If we have more than 1 DNF, return -1 (used to set DNFs from within CalcAvg function)
   if (dnfCount > 1) {
     return -1;
@@ -568,6 +624,7 @@ function calcAvg (avgSolves) {
       avgTimes.push(avgSolves[i].time);
     }
   }
+  console.log(avgTimes);
   //For each new time, add it to the average
   avgTimes.forEach(time => average += time);
   //Average it out

@@ -95,6 +95,8 @@
   <head>
     <script src="timer.js"></script>
     <title>NinTime</title>
+    <!--Source: https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-copy -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
   <body onload="Initialization()">
     <h1 id="scramble" style="text-align:center;  font-size:40px; color:black; height:10%;">U R F L B D U' R' F' L' B' D'</h1>
@@ -117,7 +119,8 @@
         <button class="modifierButton" onclick="Delete(displayedSolveIndex, prompt('How many solves would you like to delete (going down) from the current index?', 1))">X</button>
       </div>
       <br><br>
-      <button onclick="ToggleCopyWindow()">Copy 📋</button>
+      <!-- - TODO: Make copy emoji not be strange jangled text-->
+      <button onclick="ToggleCopyWindow()">Copy <i class="fa fa-copy"><!--Source: https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-copy --></i></button>
       <br><br>
       <button onclick="CloseSolveDetails()">Close</button>
     </div>
