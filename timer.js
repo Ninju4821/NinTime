@@ -143,7 +143,7 @@ function InputUp (theKey) {
   }
 }
 
-//- TODO: Don't allow 3 moves on the same axis in order.  Moves like F2 B [R] F'
+//TODO: Completely redo this function!
 function GenerateScramble (length) {
   let scramble = ""; //Scramble string
   let face = 0; //Current face
@@ -273,6 +273,7 @@ function SetTable () {
   document.getElementById("deleteButton").disabled = solves != 0 ? false : true;
 }
 
+//TODO: Make this more efficient
 function UpdateAverages () {
   let sessionMean = 0; //Mean of all completed solves
   let mo3 = 0; //Mean of the 3 most recent solves
