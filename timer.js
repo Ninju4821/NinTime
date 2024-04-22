@@ -9,6 +9,7 @@ let elapsed = 0; //How long has passed since timeStart?
 let timePenalty = 0; //What is our current time penalty (in milliseconds)
 let dnf = false; //Is this solve a DNF?
 let solves = []; //Lists all solves
+let numOfDNFs = 0;
 let bestTimes = [Infinity, Infinity, Infinity, Infinity]; //Lists the best saved times/averages; [single, mo3, ao5, ao12]
 
 
@@ -91,6 +92,8 @@ function InputDown (theKey) {
       //Stop timing
       isTiming = false;
       solves.unshift(new Solve(elapsed, dnf ? 2 : (timePenalty != 0 ? 1 : 0), document.getElementById("scramble").innerHTML));
+      numOfDNFs++;
+      console.log(numOfDNFs);
       //Generate a new scramble
       document.getElementById("scramble").innerHTML = GenerateScramble(randRange(15,20));
       //Set the table
@@ -143,101 +146,54 @@ function InputUp (theKey) {
   }
 }
 
-//TODO: Completely redo this function!
+// - TODO: Completely redo this function!
 function GenerateScramble (length) {
   let scramble = ""; //Scramble string
-  let face = 0; //Current face
-  let lastFace = 6;
-  let dir = 0; //Current direction
+  let face = 0; //Current face U,F,R,D,B,L
+  let axis = 0; //Current axis UD, FB, RL
+  let lastAxis = 3;
   let turn = ""; //Current turn string
-  let sameAxisTurns = 0;
-  let sameAxis = 3;
-  //Loop for the length of the scramble
   for (let i = 0; i < length; i++) {
-    //Get a new axis
     do {
-      face = randRange(0, 5);
-    } while (face == lastFace || (sameAxisTurns >= 2 && getAxis(face) == sameAxis))
-    //Get a random direction
-    dir = randRange(0, 2);
-    //Check the face
-      //Check the direction
+      face = Math.floor(Math.random() * 6);
+      axis = face % 3;
+    } while (axis == lastAxis)
     switch (face) {
       case 0:
         turn = "U";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
         break;
       case 1:
-        turn = "R";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
+        turn = "F";
         break;
       case 2:
-        turn = "F";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
+        turn = "R";
         break;
       case 3:
-        turn = "L";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
+        turn = "D";
         break;
       case 4:
         turn = "B";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
         break;
       case 5:
-        turn = "D";
-        if (sameAxis == getAxis(face)) {
-          sameAxisTurns++;
-        } else {
-          sameAxisTurns = 0;
-          sameAxis = getAxis(face);
-        }
+        turn = "L";
         break;
     }
-    turn += dir != 2 ? (dir == 0 ? " " : "' ") : "2 ";
-    //Add the turn to the scramble and keep track of the last turn
+    switch (Math.floor(Math.random() * 3)) {
+      case 0:
+        turn += " ";
+        break;
+      case 1:
+        turn += "' ";
+        break;
+      case 2:
+        turn += "2 ";
+        break;
+    }
+    lastAxis = face % 3;
     scramble += turn;
-    lastFace = face;
   }
-  scramble.substring(0, scramble.length-1);
+  scramble = scramble.substring(0, scramble.length-1);
   return scramble;
-}
-
-//UTIL getAxis
-function getAxis (face) {
-  if (face == 0 || face == 5) {
-    return 0;
-  } else if (face == 1 || face == 3) {
-    return 1;
-  } else if (face == 2 || face == 4) {
-    return 2;
-  } else {
-    return 3;
-  }
 }
 
 function SetTable () {
@@ -273,12 +229,12 @@ function SetTable () {
   document.getElementById("deleteButton").disabled = solves != 0 ? false : true;
 }
 
-//TODO: Make this more efficient
+//TODO: Simplify this code
 function UpdateAverages () {
   let sessionMean = 0; //Mean of all completed solves
   let mo3 = 0; //Mean of the 3 most recent solves
   let ao5 = 0; //Average of the 5 most recent solves
-  let ao12 = 0; //Average of the 12 most recent solves\
+  let ao12 = 0; //Average of the 12 most recent solves
   let completeSolves = solves.length; //Number of completed solves
   //If we have solves
   if (solves.length != 0) {
